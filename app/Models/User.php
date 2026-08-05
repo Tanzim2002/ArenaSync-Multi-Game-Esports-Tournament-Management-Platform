@@ -2,18 +2,24 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
+    public const ROLE_ADMIN = 'ADMIN';
+
+    public const ROLE_ORGANIZER = 'ORGANIZER';
+
+    public const ROLE_PLAYER = 'PLAYER';
+
     /**
-     * The attributes that are mass assignable.
+     * Attributes allowed during controlled mass assignment.
      *
      * @var list<string>
      */
@@ -21,10 +27,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Attributes hidden from serialized output.
      *
      * @var list<string>
      */
@@ -34,7 +41,15 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Check whether the user has one of the supplied platform roles.
+     */
+    public function hasRole(string ...$roles): bool
+    {
+        return in_array($this->role, $roles, true);
+    }
+
+    /**
+     * Attribute casts.
      *
      * @return array<string, string>
      */
