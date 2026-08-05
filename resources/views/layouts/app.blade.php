@@ -48,7 +48,9 @@
             </div>
         </div>
     </nav>
-
+<a href="{{ route('games.index') }}" class="hover:text-cyan-400">
+    Games
+</a>
     <main class="mx-auto max-w-6xl px-6 py-10">
         @if (session('success'))
             <div class="mb-6 rounded border border-green-500 bg-green-950 p-4 text-green-200">
