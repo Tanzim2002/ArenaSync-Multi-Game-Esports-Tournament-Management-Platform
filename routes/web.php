@@ -3,6 +3,7 @@
 use App\Http\Controllers\GameController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TeamController;
+use App\Http\Controllers\TeamMembershipRequestController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -53,6 +54,30 @@ Route::middleware('auth')->group(function () {
 
     Route::put('/teams/{team}', [TeamController::class, 'update'])
         ->name('teams.update');
+        Route::post(
+    '/teams/{team}/invitations',
+    [TeamMembershipRequestController::class, 'invite']
+)->name('teams.invitations.store');
+
+Route::post(
+    '/teams/{team}/join-requests',
+    [TeamMembershipRequestController::class, 'requestToJoin']
+)->name('teams.join-requests.store');
+
+Route::patch(
+    '/team-membership-requests/{membershipRequest}/accept',
+    [TeamMembershipRequestController::class, 'accept']
+)->name('team-membership-requests.accept');
+
+Route::patch(
+    '/team-membership-requests/{membershipRequest}/reject',
+    [TeamMembershipRequestController::class, 'reject']
+)->name('team-membership-requests.reject');
+
+Route::patch(
+    '/team-membership-requests/{membershipRequest}/cancel',
+    [TeamMembershipRequestController::class, 'cancel']
+)->name('team-membership-requests.cancel');
 });
 /*
 |--------------------------------------------------------------------------

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreTeamRequest;
 use App\Http\Requests\UpdateTeamRequest;
 use App\Models\Team;
+use App\Models\TeamMembershipRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -18,7 +19,37 @@ class TeamController extends Controller
 
 public function show(Team $team)
 {
-    return view('teams.show', compact('team'));
+    $team->load([
+        'leader',
+        'teamMembers.user',
+    ]);
+
+    $pendingRequestsQuery = TeamMembershipRequest::where(
+        'team_id',
+        $team->id
+    )
+        ->where(
+            'status',
+            TeamMembershipRequest::STATUS_PENDING
+        )
+        ->with([
+            'user',
+            'requestedBy',
+        ]);
+
+    if ($team->leader_id !== Auth::id()) {
+        $pendingRequestsQuery->where(
+            'user_id',
+            Auth::id()
+        );
+    }
+
+    $pendingRequests = $pendingRequestsQuery->get();
+
+    return view(
+        'teams.show',
+        compact('team', 'pendingRequests')
+    );
 }
 
 public function edit(Team $team)
