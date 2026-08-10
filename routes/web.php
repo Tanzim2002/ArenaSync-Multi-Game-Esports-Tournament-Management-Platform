@@ -91,3 +91,4 @@ Route::resource('games', GameController::class)
     ]);
 
 require __DIR__.'/auth.php';
+require __DIR__.'/payments.php';
