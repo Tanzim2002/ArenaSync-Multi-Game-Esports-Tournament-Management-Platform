@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Game extends Model
 {
@@ -21,6 +22,14 @@ class Game extends Model
         'rules',
         'team_size',
     ];
+
+    /**
+     * All tournaments created under this game.
+     */
+    public function tournaments(): HasMany
+    {
+        return $this->hasMany(Tournament::class);
+    }
 
     /**
      * Convert database values into appropriate PHP types.
