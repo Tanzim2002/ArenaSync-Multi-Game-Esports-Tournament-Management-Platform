@@ -63,19 +63,76 @@
 
     <hr>
 
+
     <h2>Team Members</h2>
 
     @if ($team->teamMembers->isEmpty())
+
         <p>No players have joined this team yet.</p>
+
     @else
+
         <ul>
             @foreach ($team->teamMembers as $member)
-                <li>
+
+                <li style="margin-bottom: 15px;">
+
                     {{ $member->user->name }}
                     ({{ $member->user->email }})
+
+                    <br>
+
+                    <strong>Role:</strong>
+                    {{ $member->role }}
+
+                    @if ($team->leader_id === auth()->id())
+
+                        <form
+                            method="POST"
+                            action="{{ route('teams.members.role.update', [$team, $member]) }}"
+                            style="margin-top: 5px;"
+                        >
+                            @csrf
+                            @method('PATCH')
+
+                            <select name="role" required>
+
+                                <option
+                                    value="CAPTAIN"
+                                    {{ $member->role === 'CAPTAIN' ? 'selected' : '' }}
+                                >
+                                    Captain
+                                </option>
+
+                                <option
+                                    value="MEMBER"
+                                    {{ $member->role === 'MEMBER' ? 'selected' : '' }}
+                                >
+                                    Member
+                                </option>
+
+                                <option
+                                    value="SUBSTITUTE"
+                                    {{ $member->role === 'SUBSTITUTE' ? 'selected' : '' }}
+                                >
+                                    Substitute
+                                </option>
+
+                            </select>
+
+                            <button type="submit">
+                                Update Role
+                            </button>
+
+                        </form>
+
+                    @endif
+
                 </li>
+
             @endforeach
         </ul>
+
     @endif
 
 
@@ -83,6 +140,7 @@
 
 
     @if ($team->leader_id === auth()->id())
+
 
         <h2>Invite Player</h2>
 
@@ -111,7 +169,9 @@
         <h2>Pending Membership Requests</h2>
 
         @if ($pendingRequests->isEmpty())
+
             <p>No pending requests.</p>
+
         @else
 
             @foreach ($pendingRequests as $membershipRequest)
@@ -186,9 +246,12 @@
 
     @else
 
+
         @php
-            $isMember = $team->teamMembers
-                ->contains('user_id', auth()->id());
+            $currentMember = $team->teamMembers
+                ->firstWhere('user_id', auth()->id());
+
+            $isMember = $currentMember !== null;
 
             $myPendingRequest = $pendingRequests
                 ->firstWhere('user_id', auth()->id());
@@ -203,8 +266,27 @@
                 You are a member of this team.
             </p>
 
+            <p>
+                <strong>Your Role:</strong>
+                {{ $currentMember->role }}
+            </p>
+
+            <form
+                method="POST"
+                action="{{ route('teams.leave', $team) }}"
+                onsubmit="return confirm('Are you sure you want to leave this team?');"
+            >
+                @csrf
+                @method('DELETE')
+
+                <button type="submit">
+                    Leave Team
+                </button>
+            </form>
+
 
         @elseif ($myPendingRequest)
+
 
             @if ($myPendingRequest->request_type === 'INVITATION')
 
@@ -282,6 +364,7 @@
 
         @endif
 
+
     @endif
 
 
@@ -297,9 +380,11 @@
 
     <br><br>
 
+
     <a href="{{ route('teams.create') }}">
         Create Another Team
     </a>
+
 
 </body>
 </html>

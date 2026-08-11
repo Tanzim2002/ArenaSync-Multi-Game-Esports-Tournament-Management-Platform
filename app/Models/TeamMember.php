@@ -10,9 +10,14 @@ class TeamMember extends Model
 {
     use HasFactory;
 
+    public const ROLE_CAPTAIN = 'CAPTAIN';
+    public const ROLE_MEMBER = 'MEMBER';
+    public const ROLE_SUBSTITUTE = 'SUBSTITUTE';
+
     protected $fillable = [
         'team_id',
         'user_id',
+        'role',
         'joined_at',
     ];
 
