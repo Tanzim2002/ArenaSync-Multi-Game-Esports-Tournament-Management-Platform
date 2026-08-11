@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\GameController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMembershipRequestController;
+use App\Http\Controllers\TeamMemberController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
@@ -24,10 +25,6 @@ Route::resource('games', GameController::class)
 |--------------------------------------------------------------------------
 | Administrator Game Management
 |--------------------------------------------------------------------------
-|
-| Static routes such as /games/create must be registered before
-| the dynamic /games/{game} details route.
-|
 */
 
 Route::middleware(['auth', 'role:ADMIN'])->group(function (): void {
@@ -37,6 +34,12 @@ Route::middleware(['auth', 'role:ADMIN'])->group(function (): void {
             'show',
         ]);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Team Management
+|--------------------------------------------------------------------------
+*/
 
 Route::middleware('auth')->group(function () {
 
@@ -54,31 +57,55 @@ Route::middleware('auth')->group(function () {
 
     Route::put('/teams/{team}', [TeamController::class, 'update'])
         ->name('teams.update');
-        Route::post(
-    '/teams/{team}/invitations',
-    [TeamMembershipRequestController::class, 'invite']
-)->name('teams.invitations.store');
 
-Route::post(
-    '/teams/{team}/join-requests',
-    [TeamMembershipRequestController::class, 'requestToJoin']
-)->name('teams.join-requests.store');
+    /*
+    |--------------------------------------------------------------------------
+    | Feature 5 - Team Invitations / Join Requests
+    |--------------------------------------------------------------------------
+    */
 
-Route::patch(
-    '/team-membership-requests/{membershipRequest}/accept',
-    [TeamMembershipRequestController::class, 'accept']
-)->name('team-membership-requests.accept');
+    Route::post(
+        '/teams/{team}/invitations',
+        [TeamMembershipRequestController::class, 'invite']
+    )->name('teams.invitations.store');
 
-Route::patch(
-    '/team-membership-requests/{membershipRequest}/reject',
-    [TeamMembershipRequestController::class, 'reject']
-)->name('team-membership-requests.reject');
+    Route::post(
+        '/teams/{team}/join-requests',
+        [TeamMembershipRequestController::class, 'requestToJoin']
+    )->name('teams.join-requests.store');
 
-Route::patch(
-    '/team-membership-requests/{membershipRequest}/cancel',
-    [TeamMembershipRequestController::class, 'cancel']
-)->name('team-membership-requests.cancel');
+    Route::patch(
+        '/team-membership-requests/{membershipRequest}/accept',
+        [TeamMembershipRequestController::class, 'accept']
+    )->name('team-membership-requests.accept');
+
+    Route::patch(
+        '/team-membership-requests/{membershipRequest}/reject',
+        [TeamMembershipRequestController::class, 'reject']
+    )->name('team-membership-requests.reject');
+
+    Route::patch(
+        '/team-membership-requests/{membershipRequest}/cancel',
+        [TeamMembershipRequestController::class, 'cancel']
+    )->name('team-membership-requests.cancel');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Feature 6 - Team Roles / Leave Team
+    |--------------------------------------------------------------------------
+    */
+
+    Route::patch(
+        '/teams/{team}/members/{teamMember}/role',
+        [TeamMemberController::class, 'updateRole']
+    )->name('teams.members.role.update');
+
+    Route::delete(
+        '/teams/{team}/leave',
+        [TeamMemberController::class, 'leave']
+    )->name('teams.leave');
 });
+
 /*
 |--------------------------------------------------------------------------
 | Public Game Details
