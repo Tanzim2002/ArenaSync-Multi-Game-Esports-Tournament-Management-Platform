@@ -69,4 +69,33 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function ledTeams(): HasMany
+{
+    return $this->hasMany(Team::class, 'leader_id');
+}
+public function teamMemberships(): HasMany
+{
+    return $this->hasMany(TeamMember::class);
+}
+
+public function teamMembershipRequests(): HasMany
+{
+    return $this->hasMany(TeamMembershipRequest::class);
+}
+
+public function sentTeamMembershipRequests(): HasMany
+{
+    return $this->hasMany(
+        TeamMembershipRequest::class,
+        'requested_by_id'
+    );
+}
+
+public function respondedTeamMembershipRequests(): HasMany
+{
+    return $this->hasMany(
+        TeamMembershipRequest::class,
+        'responded_by_id'
+    );
+}
 }
