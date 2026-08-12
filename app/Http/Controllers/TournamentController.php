@@ -33,7 +33,10 @@ class TournamentController extends Controller
             ->orderBy('start_at')
             ->paginate(12);
 
-        return view('tournaments.index', compact('tournaments'));
+        return view(
+            'tournaments.index',
+            compact('tournaments')
+        );
     }
 
     /**
@@ -47,7 +50,10 @@ class TournamentController extends Controller
             ->latest()
             ->paginate(10);
 
-        return view('tournaments.manage', compact('tournaments'));
+        return view(
+            'tournaments.manage',
+            compact('tournaments')
+        );
     }
 
     /**
@@ -59,7 +65,10 @@ class TournamentController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('tournaments.create', compact('games'));
+        return view(
+            'tournaments.create',
+            compact('games')
+        );
     }
 
     /**
@@ -77,8 +86,14 @@ class TournamentController extends Controller
             ->create($data);
 
         return redirect()
-            ->route('tournaments.show', $tournament)
-            ->with('success', 'Tournament draft created successfully.');
+            ->route(
+                'tournaments.show',
+                $tournament
+            )
+            ->with(
+                'success',
+                'Tournament draft created successfully.'
+            );
     }
 
     /**
@@ -90,11 +105,13 @@ class TournamentController extends Controller
     ): View {
         $user = $request->user();
 
-        $canViewDraft = $user !== null
+        $canViewDraft = (
+            $user !== null
             && (
                 $tournament->organizer_id === $user->id
                 || $user->hasRole(User::ROLE_ADMIN)
-            );
+            )
+        );
 
         if (
             $tournament->status === Tournament::STATUS_DRAFT
@@ -108,46 +125,149 @@ class TournamentController extends Controller
             'organizer',
         ]);
 
-        return view('tournaments.show', compact('tournament'));
+        return view(
+            'tournaments.show',
+            compact('tournament')
+        );
     }
 
     /**
-     * Display the tournament editing form.
+     * Display the edit form for an owned draft tournament.
      */
     public function edit(
         Request $request,
         Tournament $tournament
     ): View {
-        $this->ensureOrganizerOwnsDraft($request, $tournament);
+        $this->ensureOrganizerOwnsDraft(
+            $request,
+            $tournament
+        );
 
         $games = Game::query()
             ->orderBy('name')
             ->get();
 
-        return view('tournaments.edit', compact(
-            'tournament',
-            'games'
-        ));
+        return view(
+            'tournaments.edit',
+            compact(
+                'tournament',
+                'games'
+            )
+        );
     }
 
     /**
-     * Update an organizer's draft tournament.
+     * Update an organizer-owned draft tournament.
      */
     public function update(
         UpdateTournamentRequest $request,
         Tournament $tournament
     ): RedirectResponse {
-        $tournament->update($request->validated());
+        $tournament->update(
+            $request->validated()
+        );
 
         return redirect()
-            ->route('tournaments.show', $tournament)
-            ->with('success', 'Tournament updated successfully.');
+            ->route(
+                'tournaments.show',
+                $tournament
+            )
+            ->with(
+                'success',
+                'Tournament updated successfully.'
+            );
     }
 
     /**
-     * Ensure the authenticated organizer owns the draft tournament.
+     * Publish a draft tournament.
      */
-    private function ensureOrganizerOwnsDraft(
+    public function publish(
+        Request $request,
+        Tournament $tournament
+    ): RedirectResponse {
+        $this->ensureOrganizerOwnsDraft(
+            $request,
+            $tournament
+        );
+
+        if (
+            $tournament
+                ->registration_deadline
+                ->isPast()
+        ) {
+            return back()
+                ->withErrors([
+                    'publish' =>
+                        'The registration deadline must be in the future before publishing.',
+                ]);
+        }
+
+        $tournament->update([
+            'status' =>
+                Tournament::STATUS_REGISTRATION_OPEN,
+        ]);
+
+        return redirect()
+            ->route(
+                'tournaments.show',
+                $tournament
+            )
+            ->with(
+                'success',
+                'Tournament published successfully. Registration is now open.'
+            );
+    }
+
+    /**
+     * Cancel an organizer-owned tournament.
+     */
+    public function cancel(
+        Request $request,
+        Tournament $tournament
+    ): RedirectResponse {
+        $this->ensureOrganizerOwnsTournament(
+            $request,
+            $tournament
+        );
+
+        if (
+            in_array(
+                $tournament->status,
+                [
+                    Tournament::STATUS_COMPLETED,
+                    Tournament::STATUS_CANCELLED,
+                ],
+                true
+            )
+        ) {
+            return back()
+                ->withErrors([
+                    'cancel' =>
+                        'A completed or already cancelled tournament cannot be cancelled.',
+                ]);
+        }
+
+        $tournament->update([
+            'status' =>
+                Tournament::STATUS_CANCELLED,
+        ]);
+
+        return redirect()
+            ->route(
+                'tournaments.show',
+                $tournament
+            )
+            ->with(
+                'success',
+                'Tournament cancelled successfully.'
+            );
+    }
+
+    /**
+     * Ensure the authenticated user is the organizer
+     * who owns this tournament.
+     */
+    private function ensureOrganizerOwnsTournament(
         Request $request,
         Tournament $tournament
     ): void {
@@ -155,9 +275,29 @@ class TournamentController extends Controller
 
         abort_unless(
             $user !== null
-            && $user->hasRole(User::ROLE_ORGANIZER)
-            && $tournament->organizer_id === $user->id
-            && $tournament->status === Tournament::STATUS_DRAFT,
+            && $user->hasRole(
+                User::ROLE_ORGANIZER
+            )
+            && $tournament->organizer_id === $user->id,
+            403
+        );
+    }
+
+    /**
+     * Ensure the organizer owns a draft tournament.
+     */
+    private function ensureOrganizerOwnsDraft(
+        Request $request,
+        Tournament $tournament
+    ): void {
+        $this->ensureOrganizerOwnsTournament(
+            $request,
+            $tournament
+        );
+
+        abort_unless(
+            $tournament->status
+                === Tournament::STATUS_DRAFT,
             403
         );
     }
