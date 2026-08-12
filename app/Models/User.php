@@ -20,7 +20,7 @@ class User extends Authenticatable
     public const ROLE_PLAYER = 'PLAYER';
 
     /**
-     * Attributes allowed during controlled mass assignment.
+     * Fields allowed for mass assignment.
      *
      * @var list<string>
      */
@@ -32,7 +32,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Attributes hidden from serialized output.
+     * Fields hidden during serialization.
      *
      * @var list<string>
      */
@@ -50,7 +50,15 @@ class User extends Authenticatable
     }
 
     /**
-     * Attribute casts.
+     * Tournaments owned by this organizer.
+     */
+    public function organizedTournaments(): HasMany
+    {
+        return $this->hasMany(Tournament::class, 'organizer_id');
+    }
+
+    /**
+     * Convert database values into appropriate PHP types.
      *
      * @return array<string, string>
      */

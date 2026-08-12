@@ -2,8 +2,9 @@
 
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\TeamController;
-use App\Http\Controllers\TeamMembershipRequestController;
 use App\Http\Controllers\TeamMemberController;
+use App\Http\Controllers\TeamMembershipRequestController;
+use App\Http\Controllers\TournamentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -27,7 +28,10 @@ Route::resource('games', GameController::class)
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:ADMIN'])->group(function (): void {
+Route::middleware([
+    'auth',
+    'role:ADMIN',
+])->group(function (): void {
     Route::resource('games', GameController::class)
         ->except([
             'index',
@@ -41,22 +45,31 @@ Route::middleware(['auth', 'role:ADMIN'])->group(function (): void {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function (): void {
+    Route::get(
+        '/teams/create',
+        [TeamController::class, 'create']
+    )->name('teams.create');
 
-    Route::get('/teams/create', [TeamController::class, 'create'])
-        ->name('teams.create');
+    Route::get(
+        '/teams/{team}',
+        [TeamController::class, 'show']
+    )->name('teams.show');
 
-    Route::get('/teams/{team}', [TeamController::class, 'show'])
-        ->name('teams.show');
+    Route::get(
+        '/teams/{team}/edit',
+        [TeamController::class, 'edit']
+    )->name('teams.edit');
 
-    Route::get('/teams/{team}/edit', [TeamController::class, 'edit'])
-        ->name('teams.edit');
+    Route::post(
+        '/teams',
+        [TeamController::class, 'store']
+    )->name('teams.store');
 
-    Route::post('/teams', [TeamController::class, 'store'])
-        ->name('teams.store');
-
-    Route::put('/teams/{team}', [TeamController::class, 'update'])
-        ->name('teams.update');
+    Route::put(
+        '/teams/{team}',
+        [TeamController::class, 'update']
+    )->name('teams.update');
 
     /*
     |--------------------------------------------------------------------------
@@ -66,27 +79,42 @@ Route::middleware('auth')->group(function () {
 
     Route::post(
         '/teams/{team}/invitations',
-        [TeamMembershipRequestController::class, 'invite']
+        [
+            TeamMembershipRequestController::class,
+            'invite',
+        ]
     )->name('teams.invitations.store');
 
     Route::post(
         '/teams/{team}/join-requests',
-        [TeamMembershipRequestController::class, 'requestToJoin']
+        [
+            TeamMembershipRequestController::class,
+            'requestToJoin',
+        ]
     )->name('teams.join-requests.store');
 
     Route::patch(
         '/team-membership-requests/{membershipRequest}/accept',
-        [TeamMembershipRequestController::class, 'accept']
+        [
+            TeamMembershipRequestController::class,
+            'accept',
+        ]
     )->name('team-membership-requests.accept');
 
     Route::patch(
         '/team-membership-requests/{membershipRequest}/reject',
-        [TeamMembershipRequestController::class, 'reject']
+        [
+            TeamMembershipRequestController::class,
+            'reject',
+        ]
     )->name('team-membership-requests.reject');
 
     Route::patch(
         '/team-membership-requests/{membershipRequest}/cancel',
-        [TeamMembershipRequestController::class, 'cancel']
+        [
+            TeamMembershipRequestController::class,
+            'cancel',
+        ]
     )->name('team-membership-requests.cancel');
 
     /*
@@ -97,14 +125,119 @@ Route::middleware('auth')->group(function () {
 
     Route::patch(
         '/teams/{team}/members/{teamMember}/role',
-        [TeamMemberController::class, 'updateRole']
+        [
+            TeamMemberController::class,
+            'updateRole',
+        ]
     )->name('teams.members.role.update');
 
     Route::delete(
         '/teams/{team}/leave',
-        [TeamMemberController::class, 'leave']
+        [
+            TeamMemberController::class,
+            'leave',
+        ]
     )->name('teams.leave');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Public Tournament List
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/tournaments',
+    [TournamentController::class, 'index']
+)->name('tournaments.index');
+
+/*
+|--------------------------------------------------------------------------
+| Organizer Tournament Management - F2
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'role:ORGANIZER',
+])
+    ->prefix('tournaments')
+    ->name('tournaments.')
+    ->group(function (): void {
+        Route::get(
+            '/manage',
+            [
+                TournamentController::class,
+                'manage',
+            ]
+        )->name('manage');
+
+        Route::get(
+            '/create',
+            [
+                TournamentController::class,
+                'create',
+            ]
+        )->name('create');
+
+        Route::post(
+            '/',
+            [
+                TournamentController::class,
+                'store',
+            ]
+        )->name('store');
+
+        Route::get(
+            '/{tournament}/edit',
+            [
+                TournamentController::class,
+                'edit',
+            ]
+        )->name('edit');
+
+        Route::match(
+            [
+                'put',
+                'patch',
+            ],
+            '/{tournament}',
+            [
+                TournamentController::class,
+                'update',
+            ]
+        )->name('update');
+
+        Route::patch(
+            '/{tournament}/publish',
+            [
+                TournamentController::class,
+                'publish',
+            ]
+        )->name('publish');
+
+        Route::patch(
+            '/{tournament}/cancel',
+            [
+                TournamentController::class,
+                'cancel',
+            ]
+        )->name('cancel');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Public Tournament Details
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/tournaments/{tournament}',
+    [
+        TournamentController::class,
+        'show',
+    ]
+)->name('tournaments.show');
 
 /*
 |--------------------------------------------------------------------------
