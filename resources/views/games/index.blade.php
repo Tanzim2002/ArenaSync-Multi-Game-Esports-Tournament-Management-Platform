@@ -36,9 +36,16 @@
         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             @foreach ($games as $game)
                 <article class="rounded-xl border border-slate-800 bg-slate-900 p-6">
-                    <h2 class="text-2xl font-bold text-cyan-400">
-                        {{ $game->name }}
-                    </h2>
+                    <div class="flex items-start justify-between gap-4">
+                        <h2 class="text-2xl font-bold text-cyan-400">
+                            {{ $game->name }}
+                        </h2>
+
+                        <span class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-300">
+                            {{ $game->tournaments_count }}
+                            {{ \Illuminate\Support\Str::plural('Tournament', $game->tournaments_count) }}
+                        </span>
+                    </div>
 
                     <div class="mt-4 space-y-2 text-slate-300">
                         <p>
@@ -54,6 +61,20 @@
                         <p>
                             <span class="font-semibold">Team size:</span>
                             {{ $game->team_size }}
+                        </p>
+
+                        <p>
+                            <span class="font-semibold">Tournament usage:</span>
+
+                            @if ($game->tournaments_count > 0)
+                                <span class="text-amber-300">
+                                    Currently in use
+                                </span>
+                            @else
+                                <span class="text-emerald-300">
+                                    Not currently used
+                                </span>
+                            @endif
                         </p>
                     </div>
 

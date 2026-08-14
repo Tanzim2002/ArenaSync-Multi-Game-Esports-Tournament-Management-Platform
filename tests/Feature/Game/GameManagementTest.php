@@ -3,6 +3,7 @@
 namespace Tests\Feature\Game;
 
 use App\Models\Game;
+use App\Models\Tournament;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -176,7 +177,7 @@ class GameManagementTest extends TestCase
         ]);
     }
 
-    public function test_admin_can_delete_a_game(): void
+    public function test_admin_can_delete_an_unused_game(): void
     {
         $admin = User::factory()->create([
             'role' => User::ROLE_ADMIN,
@@ -194,6 +195,38 @@ class GameManagementTest extends TestCase
 
         $this->assertDatabaseMissing('games', [
             'id' => $game->id,
+        ]);
+    }
+
+    public function test_admin_cannot_delete_a_game_used_by_a_tournament(): void
+    {
+        $admin = User::factory()->create([
+            'role' => User::ROLE_ADMIN,
+        ]);
+
+        $game = Game::factory()->create([
+            'name' => 'Valorant',
+        ]);
+
+        Tournament::factory()->create([
+            'game_id' => $game->id,
+        ]);
+
+        $response = $this
+            ->actingAs($admin)
+            ->delete(route('games.destroy', $game));
+
+        $response
+            ->assertRedirect(route('games.show', $game))
+            ->assertSessionHasErrors('game');
+
+        $this->assertDatabaseHas('games', [
+            'id' => $game->id,
+            'name' => 'Valorant',
+        ]);
+
+        $this->assertDatabaseHas('tournaments', [
+            'game_id' => $game->id,
         ]);
     }
 }

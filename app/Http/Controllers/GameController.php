@@ -16,6 +16,7 @@ class GameController extends Controller
     public function index(): View
     {
         $games = Game::query()
+            ->withCount('tournaments')
             ->orderBy('name')
             ->paginate(10);
 
@@ -47,6 +48,8 @@ class GameController extends Controller
      */
     public function show(Game $game): View
     {
+        $game->loadCount('tournaments');
+
         return view('games.show', compact('game'));
     }
 
@@ -77,6 +80,14 @@ class GameController extends Controller
      */
     public function destroy(Game $game): RedirectResponse
     {
+        if ($game->tournaments()->exists()) {
+            return redirect()
+                ->route('games.show', $game)
+                ->withErrors([
+                    'game' => 'This game cannot be deleted because it is currently used by one or more tournaments.',
+                ]);
+        }
+
         $game->delete();
 
         return redirect()
