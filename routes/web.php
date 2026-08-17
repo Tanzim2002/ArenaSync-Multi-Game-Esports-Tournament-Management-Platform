@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\TeamMembershipRequestController;
@@ -223,6 +224,36 @@ Route::middleware([
                 'cancel',
             ]
         )->name('cancel');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Feature 7 - Tournament Registration
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'role:PLAYER',
+])
+    ->prefix('tournaments')
+    ->name('tournaments.')
+    ->group(function (): void {
+        Route::get(
+            '/{tournament}/register',
+            [
+                RegistrationController::class,
+                'create',
+            ]
+        )->name('registrations.create');
+
+        Route::post(
+            '/{tournament}/register',
+            [
+                RegistrationController::class,
+                'store',
+            ]
+        )->name('registrations.store');
     });
 
 /*

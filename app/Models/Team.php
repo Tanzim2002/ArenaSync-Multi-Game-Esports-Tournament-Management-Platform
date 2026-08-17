@@ -33,4 +33,12 @@ class Team extends Model
     {
         return $this->hasMany(TeamMembershipRequest::class);
     }
+
+    /**
+     * Tournament registrations submitted by this team.
+     */
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(Registration::class);
+    }
 }
