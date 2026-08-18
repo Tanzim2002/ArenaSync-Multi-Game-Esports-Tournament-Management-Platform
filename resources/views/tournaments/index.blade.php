@@ -10,7 +10,8 @@
             </h1>
 
             <p class="mt-2 text-slate-400">
-                Browse available ArenaSync tournaments.
+                Browse ArenaSync tournaments by game, category, region,
+                lifecycle status, and timeline phase.
             </p>
         </div>
 
@@ -36,12 +37,64 @@
 
                                 <p class="mt-1 text-sm text-slate-400">
                                     {{ $tournament->game?->name ?? 'Game unavailable' }}
+
+                                    @if ($tournament->game?->platform)
+                                        · {{ $tournament->game->platform }}
+                                    @endif
                                 </p>
                             </div>
 
-                            <span class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-300">
-                                {{ str_replace('_', ' ', $tournament->status) }}
-                            </span>
+                            <div class="flex flex-col items-end gap-2">
+                                <span class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-300">
+                                    {{ str_replace('_', ' ', $tournament->status) }}
+                                </span>
+
+                                <span class="rounded-full bg-cyan-950 px-3 py-1 text-xs font-semibold text-cyan-300">
+                                    {{ $tournament->timelinePhase() }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 grid grid-cols-2 gap-3 text-sm">
+                            <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+                                <p class="text-xs text-slate-500">
+                                    Category
+                                </p>
+
+                                <p class="mt-1 font-semibold text-slate-200">
+                                    {{ $tournament->category ?? 'Not set' }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+                                <p class="text-xs text-slate-500">
+                                    Region
+                                </p>
+
+                                <p class="mt-1 font-semibold text-slate-200">
+                                    {{ $tournament->region ?? 'Not set' }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+                                <p class="text-xs text-slate-500">
+                                    Prize Type
+                                </p>
+
+                                <p class="mt-1 font-semibold text-slate-200">
+                                    {{ $tournament->prize_type ?? 'Not set' }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-lg border border-slate-800 bg-slate-950 p-3">
+                                <p class="text-xs text-slate-500">
+                                    Match Format
+                                </p>
+
+                                <p class="mt-1 font-semibold text-slate-200">
+                                    {{ $tournament->match_format }}
+                                </p>
+                            </div>
                         </div>
 
                         <div class="mt-5 space-y-3 text-sm text-slate-300">

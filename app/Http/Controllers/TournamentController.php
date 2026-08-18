@@ -9,6 +9,7 @@ use App\Models\Tournament;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class TournamentController extends Controller
@@ -179,7 +180,7 @@ class TournamentController extends Controller
     }
 
     /**
-     * Publish a draft tournament.
+     * Publish a draft tournament and open registration.
      */
     public function publish(
         Request $request,
@@ -202,10 +203,17 @@ class TournamentController extends Controller
                 ]);
         }
 
-        $tournament->update([
-            'status' =>
-                Tournament::STATUS_REGISTRATION_OPEN,
-        ]);
+        if (
+            ! $tournament->transitionTo(
+                Tournament::STATUS_REGISTRATION_OPEN
+            )
+        ) {
+            return back()
+                ->withErrors([
+                    'status' =>
+                        'This tournament cannot be published from its current status.',
+                ]);
+        }
 
         return redirect()
             ->route(
@@ -215,6 +223,83 @@ class TournamentController extends Controller
             ->with(
                 'success',
                 'Tournament published successfully. Registration is now open.'
+            );
+    }
+
+    /**
+     * Move an organizer-owned tournament to a valid next lifecycle status.
+     */
+    public function changeStatus(
+        Request $request,
+        Tournament $tournament
+    ): RedirectResponse {
+        $this->ensureOrganizerOwnsTournament(
+            $request,
+            $tournament
+        );
+
+        $validated = $request->validate([
+            'status' => [
+                'required',
+                'string',
+                Rule::in(
+                    Tournament::statuses()
+                ),
+            ],
+        ]);
+
+        $nextStatus = $validated['status'];
+
+        if (
+            $nextStatus === Tournament::STATUS_REGISTRATION_OPEN
+        ) {
+            return back()
+                ->withErrors([
+                    'status' =>
+                        'Use the Publish action to open tournament registration.',
+                ]);
+        }
+
+        if (
+            $nextStatus === Tournament::STATUS_CANCELLED
+        ) {
+            return back()
+                ->withErrors([
+                    'status' =>
+                        'Use the Cancel action to cancel a tournament.',
+                ]);
+        }
+
+        if (
+            ! $tournament->canTransitionTo(
+                $nextStatus
+            )
+        ) {
+            return back()
+                ->withErrors([
+                    'status' =>
+                        'Invalid tournament status transition from '
+                        . str_replace('_', ' ', $tournament->status)
+                        . ' to '
+                        . str_replace('_', ' ', $nextStatus)
+                        . '.',
+                ]);
+        }
+
+        $tournament->transitionTo(
+            $nextStatus
+        );
+
+        return redirect()
+            ->route(
+                'tournaments.show',
+                $tournament
+            )
+            ->with(
+                'success',
+                'Tournament status updated to '
+                . str_replace('_', ' ', $nextStatus)
+                . '.'
             );
     }
 
@@ -231,13 +316,8 @@ class TournamentController extends Controller
         );
 
         if (
-            in_array(
-                $tournament->status,
-                [
-                    Tournament::STATUS_COMPLETED,
-                    Tournament::STATUS_CANCELLED,
-                ],
-                true
+            ! $tournament->canTransitionTo(
+                Tournament::STATUS_CANCELLED
             )
         ) {
             return back()
@@ -247,10 +327,9 @@ class TournamentController extends Controller
                 ]);
         }
 
-        $tournament->update([
-            'status' =>
-                Tournament::STATUS_CANCELLED,
-        ]);
+        $tournament->transitionTo(
+            Tournament::STATUS_CANCELLED
+        );
 
         return redirect()
             ->route(

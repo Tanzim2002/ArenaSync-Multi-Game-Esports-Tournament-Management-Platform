@@ -23,6 +23,12 @@ class Tournament extends Model
 
     public const STATUS_CANCELLED = 'CANCELLED';
 
+    public const PHASE_UPCOMING = 'UPCOMING';
+
+    public const PHASE_ONGOING = 'ONGOING';
+
+    public const PHASE_COMPLETED = 'COMPLETED';
+
     /**
      * Fields allowed for mass assignment.
      *
@@ -31,6 +37,9 @@ class Tournament extends Model
     protected $fillable = [
         'organizer_id',
         'game_id',
+        'category',
+        'region',
+        'prize_type',
         'title',
         'description',
         'registration_deadline',
@@ -60,11 +69,110 @@ class Tournament extends Model
     }
 
     /**
+     * Return all supported tournament lifecycle statuses.
+     *
+     * @return list<string>
+     */
+    public static function statuses(): array
+    {
+        return [
+            self::STATUS_DRAFT,
+            self::STATUS_REGISTRATION_OPEN,
+            self::STATUS_REGISTRATION_CLOSED,
+            self::STATUS_ONGOING,
+            self::STATUS_COMPLETED,
+            self::STATUS_CANCELLED,
+        ];
+    }
+
+    /**
+     * Return the valid next statuses for the current tournament state.
+     *
+     * @return list<string>
+     */
+    public function allowedStatusTransitions(): array
+    {
+        return match ($this->status) {
+            self::STATUS_DRAFT => [
+                self::STATUS_REGISTRATION_OPEN,
+                self::STATUS_CANCELLED,
+            ],
+
+            self::STATUS_REGISTRATION_OPEN => [
+                self::STATUS_REGISTRATION_CLOSED,
+                self::STATUS_CANCELLED,
+            ],
+
+            self::STATUS_REGISTRATION_CLOSED => [
+                self::STATUS_ONGOING,
+                self::STATUS_CANCELLED,
+            ],
+
+            self::STATUS_ONGOING => [
+                self::STATUS_COMPLETED,
+                self::STATUS_CANCELLED,
+            ],
+
+            self::STATUS_COMPLETED,
+            self::STATUS_CANCELLED => [],
+
+            default => [],
+        };
+    }
+
+    /**
+     * Determine whether the tournament may move to the supplied status.
+     */
+    public function canTransitionTo(string $status): bool
+    {
+        return in_array(
+            $status,
+            $this->allowedStatusTransitions(),
+            true
+        );
+    }
+
+    /**
+     * Move the tournament to a valid next lifecycle status.
+     */
+    public function transitionTo(string $status): bool
+    {
+        if (! $this->canTransitionTo($status)) {
+            return false;
+        }
+
+        return $this->update([
+            'status' => $status,
+        ]);
+    }
+
+    /**
+     * Determine the date-based tournament phase used for display.
+     */
+    public function timelinePhase(): string
+    {
+        $now = now();
+
+        if ($now->lt($this->start_at)) {
+            return self::PHASE_UPCOMING;
+        }
+
+        if ($now->lte($this->end_at)) {
+            return self::PHASE_ONGOING;
+        }
+
+        return self::PHASE_COMPLETED;
+    }
+
+    /**
      * The organizer who owns the tournament.
      */
     public function organizer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'organizer_id');
+        return $this->belongsTo(
+            User::class,
+            'organizer_id'
+        );
     }
 
     /**

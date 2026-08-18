@@ -25,6 +25,12 @@ class TournamentManagementTest extends TestCase
         return array_merge([
             'game_id' => $game->id,
 
+            'category' => 'Competitive',
+
+            'region' => 'South Asia',
+
+            'prize_type' => 'Cash',
+
             'title' => 'ArenaSync Championship 2026',
 
             'description' =>
@@ -135,6 +141,9 @@ class TournamentManagementTest extends TestCase
                 'id' => $tournament->id,
                 'organizer_id' => $organizer->id,
                 'game_id' => $game->id,
+                'category' => 'Competitive',
+                'region' => 'South Asia',
+                'prize_type' => 'Cash',
                 'title' => $data['title'],
                 'status' =>
                     Tournament::STATUS_DRAFT,
@@ -203,6 +212,12 @@ class TournamentManagementTest extends TestCase
                 [
                     'game_id' => $game->id,
 
+                    'category' => '',
+
+                    'region' => '',
+
+                    'prize_type' => '',
+
                     'title' => '',
 
                     'description' => 'Too short',
@@ -233,6 +248,9 @@ class TournamentManagementTest extends TestCase
             );
 
         $response->assertSessionHasErrors([
+            'category',
+            'region',
+            'prize_type',
             'title',
             'description',
             'registration_deadline',
@@ -269,6 +287,9 @@ class TournamentManagementTest extends TestCase
         $data = $this->validTournamentData(
             $newGame,
             [
+                'category' => 'Professional',
+                'region' => 'Asia',
+                'prize_type' => 'Cash Prize',
                 'title' =>
                     'Updated ArenaSync Championship',
             ]
@@ -299,6 +320,12 @@ class TournamentManagementTest extends TestCase
                 'id' => $tournament->id,
 
                 'game_id' => $newGame->id,
+
+                'category' => 'Professional',
+
+                'region' => 'Asia',
+
+                'prize_type' => 'Cash Prize',
 
                 'title' =>
                     'Updated ArenaSync Championship',

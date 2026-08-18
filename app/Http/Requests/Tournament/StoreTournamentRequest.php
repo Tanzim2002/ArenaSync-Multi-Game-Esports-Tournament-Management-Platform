@@ -29,6 +29,24 @@ class StoreTournamentRequest extends FormRequest
                 'exists:games,id',
             ],
 
+            'category' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'region' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'prize_type' => [
+                'required',
+                'string',
+                'max:50',
+            ],
+
             'title' => [
                 'required',
                 'string',

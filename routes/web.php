@@ -154,7 +154,7 @@ Route::get(
 
 /*
 |--------------------------------------------------------------------------
-| Organizer Tournament Management - F2
+| Organizer Tournament Management - F2 / F3
 |--------------------------------------------------------------------------
 */
 
@@ -216,6 +216,20 @@ Route::middleware([
                 'publish',
             ]
         )->name('publish');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Feature 3 - Tournament Status Tracking
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/{tournament}/status',
+            [
+                TournamentController::class,
+                'changeStatus',
+            ]
+        )->name('status.update');
 
         Route::patch(
             '/{tournament}/cancel',
