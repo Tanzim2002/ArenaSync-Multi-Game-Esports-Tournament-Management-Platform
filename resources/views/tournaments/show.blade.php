@@ -13,12 +13,6 @@
             </a>
         </div>
 
-        @if (session('success'))
-            <div class="mb-6 rounded-lg border border-emerald-700 bg-emerald-950/40 p-4 text-emerald-200">
-                {{ session('success') }}
-            </div>
-        @endif
-
         <article class="rounded-xl border border-slate-800 bg-slate-900 p-8">
             <div class="flex flex-wrap items-start justify-between gap-6">
                 <div class="max-w-3xl">
@@ -55,9 +49,7 @@
 
             <div class="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
-                    <p class="text-sm text-slate-500">
-                        Game
-                    </p>
+                    <p class="text-sm text-slate-500">Game</p>
 
                     <p class="mt-1 font-semibold text-slate-200">
                         {{ $tournament->game->name }}
@@ -65,9 +57,7 @@
                 </div>
 
                 <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
-                    <p class="text-sm text-slate-500">
-                        Organizer
-                    </p>
+                    <p class="text-sm text-slate-500">Organizer</p>
 
                     <p class="mt-1 font-semibold text-slate-200">
                         {{ $tournament->organizer->name }}
@@ -75,9 +65,7 @@
                 </div>
 
                 <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
-                    <p class="text-sm text-slate-500">
-                        Match Format
-                    </p>
+                    <p class="text-sm text-slate-500">Match Format</p>
 
                     <p class="mt-1 font-semibold text-slate-200">
                         {{ $tournament->match_format }}
@@ -85,9 +73,7 @@
                 </div>
 
                 <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
-                    <p class="text-sm text-slate-500">
-                        Team Limit
-                    </p>
+                    <p class="text-sm text-slate-500">Team Limit</p>
 
                     <p class="mt-1 font-semibold text-slate-200">
                         {{ $tournament->team_limit }} teams
@@ -95,9 +81,7 @@
                 </div>
 
                 <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
-                    <p class="text-sm text-slate-500">
-                        Prize Pool
-                    </p>
+                    <p class="text-sm text-slate-500">Prize Pool</p>
 
                     <p class="mt-1 font-semibold text-slate-200">
                         {{ number_format((float) $tournament->prize_pool, 2) }}
@@ -115,9 +99,7 @@
                 </div>
 
                 <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
-                    <p class="text-sm text-slate-500">
-                        Starts
-                    </p>
+                    <p class="text-sm text-slate-500">Starts</p>
 
                     <p class="mt-1 font-semibold text-slate-200">
                         {{ $tournament->start_at->format('M d, Y h:i A') }}
@@ -125,9 +107,7 @@
                 </div>
 
                 <div class="rounded-lg border border-slate-800 bg-slate-950 p-4">
-                    <p class="text-sm text-slate-500">
-                        Ends
-                    </p>
+                    <p class="text-sm text-slate-500">Ends</p>
 
                     <p class="mt-1 font-semibold text-slate-200">
                         {{ $tournament->end_at->format('M d, Y h:i A') }}
