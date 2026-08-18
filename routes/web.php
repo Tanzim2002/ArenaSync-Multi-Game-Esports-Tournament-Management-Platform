@@ -154,7 +154,7 @@ Route::get(
 
 /*
 |--------------------------------------------------------------------------
-| Organizer Tournament Management - F2 / F3
+| Organizer Tournament Management - F2 / F3 / F8
 |--------------------------------------------------------------------------
 */
 
@@ -238,6 +238,36 @@ Route::middleware([
                 'cancel',
             ]
         )->name('cancel');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Feature 8 - Participant Approval System
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/{tournament}/registrations',
+            [
+                RegistrationController::class,
+                'index',
+            ]
+        )->name('registrations.index');
+
+        Route::patch(
+            '/{tournament}/registrations/{registration}/approve',
+            [
+                RegistrationController::class,
+                'approve',
+            ]
+        )->name('registrations.approve');
+
+        Route::patch(
+            '/{tournament}/registrations/{registration}/reject',
+            [
+                RegistrationController::class,
+                'reject',
+            ]
+        )->name('registrations.reject');
     });
 
 /*

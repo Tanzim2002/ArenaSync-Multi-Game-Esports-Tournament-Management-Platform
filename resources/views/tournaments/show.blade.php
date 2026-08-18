@@ -55,14 +55,24 @@
                     @if (
                         auth()->user()->hasRole(\App\Models\User::ROLE_ORGANIZER)
                         && auth()->id() === $tournament->organizer_id
-                        && $tournament->status === \App\Models\Tournament::STATUS_DRAFT
                     )
-                        <a
-                            href="{{ route('tournaments.edit', $tournament) }}"
-                            class="rounded bg-amber-600 px-4 py-2 font-semibold text-white hover:bg-amber-500"
-                        >
-                            Edit Tournament
-                        </a>
+                        <div class="flex flex-wrap gap-3">
+                            @if ($tournament->status === \App\Models\Tournament::STATUS_DRAFT)
+                                <a
+                                    href="{{ route('tournaments.edit', $tournament) }}"
+                                    class="rounded bg-amber-600 px-4 py-2 font-semibold text-white hover:bg-amber-500"
+                                >
+                                    Edit Tournament
+                                </a>
+                            @else
+                                <a
+                                    href="{{ route('tournaments.registrations.index', $tournament) }}"
+                                    class="rounded bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-500"
+                                >
+                                    Manage Registrations
+                                </a>
+                            @endif
+                        </div>
                     @endif
                 @endauth
             </div>

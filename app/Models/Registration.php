@@ -89,4 +89,69 @@ class Registration extends Model
     {
         return $this->status === self::STATUS_CANCELLED;
     }
+
+    /**
+     * Determine whether an organizer may still review this registration.
+     */
+    public function isReviewable(): bool
+    {
+        return $this->isPending();
+    }
+
+    /**
+     * Approve a pending registration.
+     */
+    public function approve(): bool
+    {
+        return $this->makeDecision(
+            self::STATUS_APPROVED
+        );
+    }
+
+    /**
+     * Reject a pending registration.
+     */
+    public function reject(): bool
+    {
+        return $this->makeDecision(
+            self::STATUS_REJECTED
+        );
+    }
+
+    /**
+     * Apply a single approval decision to a pending registration.
+     */
+    private function makeDecision(string $status): bool
+    {
+        if (
+            ! in_array(
+                $status,
+                [
+                    self::STATUS_APPROVED,
+                    self::STATUS_REJECTED,
+                ],
+                true
+            )
+        ) {
+            return false;
+        }
+
+        $updated = self::query()
+            ->whereKey($this->getKey())
+            ->where(
+                'status',
+                self::STATUS_PENDING
+            )
+            ->update([
+                'status' => $status,
+            ]);
+
+        if ($updated !== 1) {
+            return false;
+        }
+
+        $this->status = $status;
+
+        return true;
+    }
 }

@@ -12,7 +12,7 @@
 
                 <p class="mt-2 text-slate-400">
                     Manage your tournament drafts, classifications,
-                    lifecycle statuses, and schedules.
+                    lifecycle statuses, schedules, and participant approvals.
                 </p>
             </div>
 
@@ -116,6 +116,7 @@
                                         <span class="font-semibold text-slate-300">
                                             Registration deadline:
                                         </span>
+
                                         {{ $tournament->registration_deadline->format('M d, Y h:i A') }}
                                     </p>
 
@@ -123,6 +124,7 @@
                                         <span class="font-semibold text-slate-300">
                                             Starts:
                                         </span>
+
                                         {{ $tournament->start_at->format('M d, Y h:i A') }}
                                     </p>
 
@@ -130,12 +132,13 @@
                                         <span class="font-semibold text-slate-300">
                                             Team limit:
                                         </span>
+
                                         {{ $tournament->team_limit }}
                                     </p>
                                 </div>
                             </div>
 
-                            <div class="flex flex-wrap gap-3">
+                            <div class="flex max-w-xs flex-wrap justify-end gap-3">
                                 <a
                                     href="{{ route('tournaments.show', $tournament) }}"
                                     class="rounded bg-cyan-600 px-4 py-2 font-semibold text-white hover:bg-cyan-500"
@@ -149,6 +152,18 @@
                                         class="rounded bg-amber-600 px-4 py-2 font-semibold text-white hover:bg-amber-500"
                                     >
                                         Edit
+                                    </a>
+                                @endif
+
+                                @if ($tournament->status !== \App\Models\Tournament::STATUS_DRAFT)
+                                    <a
+                                        href="{{ route(
+                                            'tournaments.registrations.index',
+                                            $tournament
+                                        ) }}"
+                                        class="rounded bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-500"
+                                    >
+                                        Manage Registrations
                                     </a>
                                 @endif
                             </div>
