@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\OrganizerVerificationController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
@@ -39,6 +40,68 @@ Route::middleware([
             'show',
         ]);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Feature 19 - Organizer Verification
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware([
+    'auth',
+    'role:ORGANIZER',
+])
+    ->prefix('organizer')
+    ->name('organizer-verification.')
+    ->group(function (): void {
+        Route::get(
+            '/verification',
+            [
+                OrganizerVerificationController::class,
+                'show',
+            ]
+        )->name('show');
+
+        Route::post(
+            '/verification',
+            [
+                OrganizerVerificationController::class,
+                'store',
+            ]
+        )->name('store');
+    });
+
+Route::middleware([
+    'auth',
+    'role:ADMIN',
+])
+    ->prefix('admin')
+    ->name('admin.organizer-verifications.')
+    ->group(function (): void {
+        Route::get(
+            '/organizer-verifications',
+            [
+                OrganizerVerificationController::class,
+                'index',
+            ]
+        )->name('index');
+
+        Route::patch(
+            '/organizer-verifications/{verification}/approve',
+            [
+                OrganizerVerificationController::class,
+                'approve',
+            ]
+        )->name('approve');
+
+        Route::patch(
+            '/organizer-verifications/{verification}/reject',
+            [
+                OrganizerVerificationController::class,
+                'reject',
+            ]
+        )->name('reject');
+    });
 
 /*
 |--------------------------------------------------------------------------
