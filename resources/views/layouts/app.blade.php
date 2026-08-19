@@ -18,9 +18,38 @@
 
             <div class="flex items-center gap-4">
                 @auth
-                    <span class="text-sm text-slate-300">
-                        {{ auth()->user()->name }}
-                        ({{ auth()->user()->role }})
+                    @if (auth()->user()->hasRole(\App\Models\User::ROLE_ORGANIZER))
+                        <a
+                            href="{{ route('organizer-verification.show') }}"
+                            class="text-sm hover:text-cyan-400"
+                        >
+                            Verification
+                        </a>
+                    @endif
+
+                    @if (auth()->user()->hasRole(\App\Models\User::ROLE_ADMIN))
+                        <a
+                            href="{{ route('admin.organizer-verifications.index') }}"
+                            class="text-sm hover:text-cyan-400"
+                        >
+                            Organizer Verifications
+                        </a>
+                    @endif
+
+                    <span class="flex items-center gap-2 text-sm text-slate-300">
+                        <span>
+                            {{ auth()->user()->name }}
+                            ({{ auth()->user()->role }})
+                        </span>
+
+                        @if (
+                            auth()->user()->hasRole(\App\Models\User::ROLE_ORGANIZER)
+                            && auth()->user()->organizerVerification?->isVerified()
+                        )
+                            <span class="rounded-full border border-emerald-500 bg-emerald-950 px-2 py-1 text-xs font-semibold text-emerald-300">
+                                ✓ Verified
+                            </span>
+                        @endif
                     </span>
 
                     <form method="POST" action="{{ route('logout') }}">
@@ -48,9 +77,11 @@
             </div>
         </div>
     </nav>
-<a href="{{ route('games.index') }}" class="hover:text-cyan-400">
-    Games
-</a>
+
+    <a href="{{ route('games.index') }}" class="hover:text-cyan-400">
+        Games
+    </a>
+
     <main class="mx-auto max-w-6xl px-6 py-10">
         @if (session('success'))
             <div class="mb-6 rounded border border-green-500 bg-green-950 p-4 text-green-200">
