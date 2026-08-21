@@ -7,6 +7,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\TeamMembershipRequestController;
 use App\Http\Controllers\TournamentController;
+use App\Http\Controllers\SponsorController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -389,3 +390,4 @@ Route::resource('games', GameController::class)
     ]);
 
 require __DIR__.'/auth.php';
+Route::resource('sponsors', SponsorController::class);
