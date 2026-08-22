@@ -7,6 +7,7 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\TeamMembershipRequestController;
 use App\Http\Controllers\TournamentController;
+use App\Http\Controllers\TournamentMessageController;
 use App\Http\Controllers\SponsorController;
 use Illuminate\Support\Facades\Route;
 
@@ -364,6 +365,31 @@ Route::middleware([
         )->name('registrations.store');
     });
 
+/*
+|--------------------------------------------------------------------------
+| Feature 18 - Tournament Chat & Announcements
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')
+    ->prefix('tournaments')
+    ->name('tournaments.')
+    ->group(function (): void {
+        Route::get(
+            '/{tournament}/chat',
+            [TournamentMessageController::class, 'index']
+        )->name('chat');
+
+        Route::post(
+            '/{tournament}/chat',
+            [TournamentMessageController::class, 'storeChat']
+        )->name('chat.store');
+
+        Route::post(
+            '/{tournament}/announcements',
+            [TournamentMessageController::class, 'storeAnnouncement']
+        )->name('announcements.store');
+    });
 /*
 |--------------------------------------------------------------------------
 | Public Tournament Details

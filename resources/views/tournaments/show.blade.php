@@ -49,6 +49,17 @@
                     <p class="mt-4 leading-7 text-slate-300">
                         {{ $tournament->description }}
                     </p>
+
+@auth
+    <div class="mt-4">
+        <a
+            href="{{ route('tournaments.chat', $tournament) }}"
+            class="inline-block rounded bg-cyan-600 px-4 py-2 font-semibold text-white hover:bg-cyan-500"
+        >
+            Tournament Chat & Announcements
+        </a>
+    </div>
+@endauth
                 </div>
 
                 @auth
