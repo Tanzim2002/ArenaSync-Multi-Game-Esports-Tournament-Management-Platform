@@ -10,6 +10,8 @@ use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentMessageController;
 use App\Http\Controllers\SponsorController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\MatchController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -334,7 +336,96 @@ Route::middleware([
             ]
         )->name('registrations.reject');
     });
+/*
+|--------------------------------------------------------------------------
+| Feature 10 - Dummy Payment Submission
+|--------------------------------------------------------------------------
+*/
 
+Route::middleware(['auth', 'role:PLAYER'])->group(function (): void {
+    Route::get(
+        '/registrations/{registration}/payment/create',
+        [PaymentController::class, 'create']
+    )->name('registrations.payment.create');
+
+    Route::post(
+        '/registrations/{registration}/payment',
+        [PaymentController::class, 'store']
+    )->name('registrations.payment.store');
+
+    Route::get(
+        '/registrations/{registration}/payment',
+        [PaymentController::class, 'show']
+    )->name('registrations.payment.show');
+
+    Route::get(
+        '/tournaments/{tournament}/payment',
+        [PaymentController::class, 'mine']
+    )->name('tournaments.payment.mine');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Feature 11 - Payment Verification
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:ORGANIZER'])
+    ->prefix('tournaments')
+    ->name('tournaments.')
+    ->group(function (): void {
+        Route::get(
+            '/{tournament}/payments',
+            [PaymentController::class, 'index']
+        )->name('payments.index');
+
+        Route::patch(
+            '/{tournament}/payments/{payment}/verify',
+            [PaymentController::class, 'verify']
+        )->name('payments.verify');
+
+        Route::patch(
+            '/{tournament}/payments/{payment}/reject',
+            [PaymentController::class, 'reject']
+        )->name('payments.reject');
+    });
+/*
+|--------------------------------------------------------------------------
+| Feature 12 - Match Schedule & Timeline Management
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/tournaments/{tournament}/matches',
+    [MatchController::class, 'index']
+)->name('tournaments.matches.index');
+
+Route::get(
+    '/matches/{match}',
+    [MatchController::class, 'show']
+)->name('matches.show');
+
+Route::middleware(['auth', 'role:ORGANIZER'])
+    ->prefix('tournaments')
+    ->name('tournaments.')
+    ->group(function (): void {
+        Route::get(
+            '/{tournament}/matches/create',
+            [MatchController::class, 'create']
+        )->name('matches.create');
+
+        Route::post(
+            '/{tournament}/matches',
+            [MatchController::class, 'store']
+        )->name('matches.store');
+    });
+
+Route::middleware(['auth', 'role:ORGANIZER'])->group(function (): void {
+    Route::patch(
+        '/matches/{match}/status',
+        [MatchController::class, 'changeStatus']
+    )->name('matches.status.update');
+});    
 /*
 |--------------------------------------------------------------------------
 | Feature 7 - Tournament Registration

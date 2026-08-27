@@ -190,4 +190,12 @@ class Tournament extends Model
     {
         return $this->hasMany(Registration::class);
     }
-}
+
+    /**
+     * Scheduled matches for this tournament.
+     */
+    public function matches(): HasMany
+    {
+        return $this->hasMany(GameMatch::class);
+    }
+}   
