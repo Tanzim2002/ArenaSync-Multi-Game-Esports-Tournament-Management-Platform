@@ -10,7 +10,12 @@ use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentMessageController;
 use App\Http\Controllers\SponsorController;
 use Illuminate\Support\Facades\Route;
+<<<<<<< HEAD
 use App\Http\Controllers\PaymentController
+=======
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\MatchController;
+>>>>>>> feature/m4-f12-match-schedule-timeline
 
 Route::get('/', function () {
     return view('welcome');
@@ -388,6 +393,43 @@ Route::middleware(['auth', 'role:ORGANIZER'])
             [PaymentController::class, 'reject']
         )->name('payments.reject');
     });
+/*
+|--------------------------------------------------------------------------
+| Feature 12 - Match Schedule & Timeline Management
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/tournaments/{tournament}/matches',
+    [MatchController::class, 'index']
+)->name('tournaments.matches.index');
+
+Route::get(
+    '/matches/{match}',
+    [MatchController::class, 'show']
+)->name('matches.show');
+
+Route::middleware(['auth', 'role:ORGANIZER'])
+    ->prefix('tournaments')
+    ->name('tournaments.')
+    ->group(function (): void {
+        Route::get(
+            '/{tournament}/matches/create',
+            [MatchController::class, 'create']
+        )->name('matches.create');
+
+        Route::post(
+            '/{tournament}/matches',
+            [MatchController::class, 'store']
+        )->name('matches.store');
+    });
+
+Route::middleware(['auth', 'role:ORGANIZER'])->group(function (): void {
+    Route::patch(
+        '/matches/{match}/status',
+        [MatchController::class, 'changeStatus']
+    )->name('matches.status.update');
+});    
 /*
 |--------------------------------------------------------------------------
 | Feature 7 - Tournament Registration
