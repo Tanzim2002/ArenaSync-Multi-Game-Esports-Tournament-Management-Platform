@@ -57,7 +57,13 @@ class Registration extends Model
     {
         return $this->belongsTo(Team::class);
     }
-
+    /**
+     * The payment submitted for this registration, if any.
+     */
+    public function payment(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Payment::class);
+    }
     /**
      * Determine whether the registration is pending.
      */

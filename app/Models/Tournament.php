@@ -64,6 +64,8 @@ class Tournament extends Model
             'start_at' => 'datetime',
             'end_at' => 'datetime',
             'prize_pool' => 'decimal:2',
+            'entry_fee' => 'decimal:2',
+            'is_paid' => 'boolean',
             'team_limit' => 'integer',
         ];
     }
@@ -163,7 +165,14 @@ class Tournament extends Model
 
         return self::PHASE_COMPLETED;
     }
-
+    /**
+     * Determine whether a payment step is required before a
+     * registration for this tournament can be confirmed.
+     */
+    public function requiresPayment(): bool
+    {
+        return $this->is_paid && (float) $this->entry_fee > 0;
+    }
     /**
      * The organizer who owns the tournament.
      */

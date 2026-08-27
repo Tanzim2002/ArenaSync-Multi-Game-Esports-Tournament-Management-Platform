@@ -10,6 +10,7 @@ use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentMessageController;
 use App\Http\Controllers\SponsorController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PaymentController
 
 Route::get('/', function () {
     return view('welcome');
@@ -334,7 +335,59 @@ Route::middleware([
             ]
         )->name('registrations.reject');
     });
+/*
+|--------------------------------------------------------------------------
+| Feature 10 - Dummy Payment Submission
+|--------------------------------------------------------------------------
+*/
 
+Route::middleware(['auth', 'role:PLAYER'])->group(function (): void {
+    Route::get(
+        '/registrations/{registration}/payment/create',
+        [PaymentController::class, 'create']
+    )->name('registrations.payment.create');
+
+    Route::post(
+        '/registrations/{registration}/payment',
+        [PaymentController::class, 'store']
+    )->name('registrations.payment.store');
+
+    Route::get(
+        '/registrations/{registration}/payment',
+        [PaymentController::class, 'show']
+    )->name('registrations.payment.show');
+
+    Route::get(
+        '/tournaments/{tournament}/payment',
+        [PaymentController::class, 'mine']
+    )->name('tournaments.payment.mine');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Feature 11 - Payment Verification
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'role:ORGANIZER'])
+    ->prefix('tournaments')
+    ->name('tournaments.')
+    ->group(function (): void {
+        Route::get(
+            '/{tournament}/payments',
+            [PaymentController::class, 'index']
+        )->name('payments.index');
+
+        Route::patch(
+            '/{tournament}/payments/{payment}/verify',
+            [PaymentController::class, 'verify']
+        )->name('payments.verify');
+
+        Route::patch(
+            '/{tournament}/payments/{payment}/reject',
+            [PaymentController::class, 'reject']
+        )->name('payments.reject');
+    });
 /*
 |--------------------------------------------------------------------------
 | Feature 7 - Tournament Registration

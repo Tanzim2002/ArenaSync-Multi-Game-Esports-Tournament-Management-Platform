@@ -348,7 +348,15 @@
                     </div>
                 @endif
             @endauth
-
+            @auth
+                @if (auth()->user()->hasRole(\App\Models\User::ROLE_PLAYER))
+                    <div class="mt-4 rounded-xl border border-slate-800 bg-slate-950 p-6">
+                        <a href="{{ route('tournaments.payment.mine', $tournament) }}" class="text-cyan-400 hover:text-cyan-300">
+                            View My Payment Status →
+                        </a>
+                    </div>
+                @endif
+            @endauth
             <div class="mt-8">
                 <h2 class="text-2xl font-semibold text-white">
                     Tournament Rules
