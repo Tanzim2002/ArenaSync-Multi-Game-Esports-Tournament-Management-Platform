@@ -12,6 +12,7 @@ use App\Http\Controllers\SponsorController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\MatchController;
+use App\Http\Controllers\MatchResultController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -426,6 +427,40 @@ Route::middleware(['auth', 'role:ORGANIZER'])->group(function (): void {
         [MatchController::class, 'changeStatus']
     )->name('matches.status.update');
 });    
+/*
+|--------------------------------------------------------------------------
+| Feature 14 - Match Result Submission & Verification
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function (): void {
+    Route::get(
+        '/matches/{match}/result',
+        [MatchResultController::class, 'create']
+    )->name('match-results.create');
+
+    Route::post(
+        '/matches/{match}/result',
+        [MatchResultController::class, 'store']
+    )->name('match-results.store');
+});
+
+Route::middleware(['auth', 'role:ORGANIZER'])->group(function (): void {
+    Route::get(
+        '/tournaments/{tournament}/results',
+        [MatchResultController::class, 'index']
+    )->name('match-results.index');
+
+    Route::patch(
+        '/match-results/{result}/verify',
+        [MatchResultController::class, 'verify']
+    )->name('match-results.verify');
+
+    Route::patch(
+        '/match-results/{result}/reject',
+        [MatchResultController::class, 'reject']
+    )->name('match-results.reject');
+});
 /*
 |--------------------------------------------------------------------------
 | Feature 7 - Tournament Registration
