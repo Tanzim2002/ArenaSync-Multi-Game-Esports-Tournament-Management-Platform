@@ -9,6 +9,7 @@ use App\Http\Controllers\TeamMembershipRequestController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentMessageController;
 use App\Http\Controllers\SponsorController;
+use App\Http\Controllers\LeaderboardController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\MatchController;
@@ -558,3 +559,11 @@ Route::resource('games', GameController::class)
 
 require __DIR__.'/auth.php';
 Route::resource('sponsors', SponsorController::class);
+/*
+|--------------------------------------------------------------------------
+| Leaderboard
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/leaderboard', [LeaderboardController::class, 'index'])
+    ->name('leaderboard.index');
