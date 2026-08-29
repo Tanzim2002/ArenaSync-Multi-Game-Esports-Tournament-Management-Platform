@@ -60,7 +60,11 @@
         {{ $team->created_at->format('d M Y') }}
     </p>
 
-
+<p>
+    <a href="{{ route('performance.teams.show', $team) }}">
+        View Team Performance History
+    </a>
+</p>
     <hr>
 
 
@@ -84,7 +88,11 @@
 
                     <strong>Role:</strong>
                     {{ $member->role }}
+                      <br>
 
+<a href="{{ route('performance.players.show', $member->user) }}">
+    View Player Performance History
+</a>
                     @if ($team->leader_id === auth()->id())
 
                         <form

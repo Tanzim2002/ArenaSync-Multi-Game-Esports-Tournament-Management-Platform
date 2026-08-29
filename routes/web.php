@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\MatchResultController;
+use App\Http\Controllers\PerformanceHistoryController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -207,6 +208,20 @@ Route::middleware('auth')->group(function (): void {
             'leave',
         ]
     )->name('teams.leave');
+Route::get(
+    '/teams/{team}/performance',
+    [
+        PerformanceHistoryController::class,
+        'team',
+    ]
+)->name('performance.teams.show');
+Route::get(
+    '/players/{user}/performance',
+    [
+        PerformanceHistoryController::class,
+        'player',
+    ]
+)->name('performance.players.show');
 });
 
 /*
