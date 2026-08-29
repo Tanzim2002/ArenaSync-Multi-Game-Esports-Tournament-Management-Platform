@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class GameMatch extends Model
 {
@@ -93,6 +94,11 @@ class GameMatch extends Model
     {
         return $this->belongsTo(Team::class, 'team_two_id');
     }
+    
+    public function result(): HasOne
+{
+    return $this->hasOne(MatchResult::class, 'match_id');
+}
 
     /**
      * Convert database values into appropriate PHP types.
