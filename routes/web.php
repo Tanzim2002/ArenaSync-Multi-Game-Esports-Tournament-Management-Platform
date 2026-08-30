@@ -15,10 +15,26 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\MatchController;
 use App\Http\Controllers\MatchResultController;
 use App\Http\Controllers\PerformanceHistoryController;
+use App\Http\Controllers\SearchDashboardController;
+
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| Feature 20 - Search, Filter & Dashboard
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function (): void {
+    Route::get(
+        '/dashboard',
+        [SearchDashboardController::class, 'index']
+    )->name('dashboard.index');
+});
+
 
 /*
 |--------------------------------------------------------------------------
