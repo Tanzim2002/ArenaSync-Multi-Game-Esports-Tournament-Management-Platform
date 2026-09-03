@@ -424,6 +424,75 @@ Route::middleware(['auth', 'role:ORGANIZER'])
     });
 /*
 |--------------------------------------------------------------------------
+| Feature 13 - Tournament Livestream Management
+|--------------------------------------------------------------------------
+*/
+
+
+Route::get(
+    '/tournaments/{tournament}/livestreams',
+    [
+        \App\Http\Controllers\Payments\LivestreamController::class,
+        'index',
+    ]
+)->name('tournaments.livestreams.index');
+
+
+
+Route::middleware(['auth'])
+    ->prefix('tournaments')
+    ->name('tournaments.')
+    ->group(function (): void {
+
+
+        Route::get(
+            '/{tournament}/livestreams/create',
+            [
+                \App\Http\Controllers\Payments\LivestreamController::class,
+                'create',
+            ]
+        )->name('livestreams.create');
+
+
+        Route::post(
+            '/{tournament}/livestreams',
+            [
+                \App\Http\Controllers\Payments\LivestreamController::class,
+                'store',
+            ]
+        )->name('livestreams.store');
+
+
+        Route::get(
+            '/{tournament}/livestreams/{livestream}/edit',
+            [
+                \App\Http\Controllers\Payments\LivestreamController::class,
+                'edit',
+            ]
+        )->name('livestreams.edit');
+
+
+        Route::put(
+            '/{tournament}/livestreams/{livestream}',
+            [
+                \App\Http\Controllers\Payments\LivestreamController::class,
+                'update',
+            ]
+        )->name('livestreams.update');
+
+
+        Route::delete(
+            '/{tournament}/livestreams/{livestream}',
+            [
+                \App\Http\Controllers\Payments\LivestreamController::class,
+                'destroy',
+            ]
+        )->name('livestreams.destroy');
+
+
+    });
+/*
+|--------------------------------------------------------------------------
 | Feature 12 - Match Schedule & Timeline Management
 |--------------------------------------------------------------------------
 */
