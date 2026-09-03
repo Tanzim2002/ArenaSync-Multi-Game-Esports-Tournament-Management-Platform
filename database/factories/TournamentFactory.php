@@ -7,62 +7,44 @@ use App\Models\Tournament;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Tournament>
- */
 class TournamentFactory extends Factory
 {
     protected $model = Tournament::class;
 
-    /**
-     * Define a valid tournament record for testing.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
-        $registrationDeadline = now()->addDays(3);
-        $startAt = now()->addDays(5);
-        $endAt = now()->addDays(6);
-
         return [
-            'organizer_id' => User::factory()->state([
-                'role' => User::ROLE_ORGANIZER,
-            ]),
+
+            'organizer_id' => User::factory(),
 
             'game_id' => Game::factory(),
 
-            'title' => fake()->unique()->words(4, true),
+            'category' => 'Solo',
 
-            'description' => fake()->paragraph(3),
+            'region' => 'Global',
 
-            'registration_deadline' => $registrationDeadline,
+            'prize_type' => 'Cash',
 
-            'start_at' => $startAt,
+            'title' => fake()->sentence(),
 
-            'end_at' => $endAt,
+            'description' => fake()->paragraph(),
 
-            'rules' => fake()->sentence(15),
+            'registration_deadline' => now()->addDays(5),
 
-            'prize_pool' => fake()->randomFloat(
-                2,
-                0,
-                100000
-            ),
+            'start_at' => now()->addDays(10),
 
-            'team_limit' => fake()->numberBetween(
-                2,
-                64
-            ),
+            'end_at' => now()->addDays(12),
 
-            'match_format' => fake()->randomElement([
-                'Single Elimination',
-                'Double Elimination',
-                'Round Robin',
-                'Group Stage',
-            ]),
+            'rules' => 'Tournament rules',
+
+            'prize_pool' => 5000,
+
+            'team_limit' => 16,
+
+            'match_format' => 'Round Robin',
 
             'status' => Tournament::STATUS_DRAFT,
+
         ];
     }
 }
