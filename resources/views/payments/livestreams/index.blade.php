@@ -1,45 +1,121 @@
 @extends('layouts.app')
 
+@section('title', 'Livestreams | ArenaSync')
+
 @section('content')
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Livestreams — {{ $tournament->title }}</h3>
-        @auth
-            @if (auth()->id() === $tournament->organizer_id || auth()->user()->role === 'admin')
-                <a href="{{ route('tournaments.livestreams.create', $tournament) }}" class="btn btn-sm btn-primary">
-                    + Add Livestream
-                </a>
-            @endif
-        @endauth
+<div class="mx-auto max-w-5xl">
+    <div class="mb-6">
+        <a
+            href="{{ route('tournaments.show', $tournament) }}"
+            class="text-sm font-medium text-cyan-400 hover:text-cyan-300"
+        >
+            â† Back to Tournament
+        </a>
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+    <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-cyan-400">
+                Tournament Livestreams
+            </h1>
 
-    @forelse ($livestreams as $stream)
-        <div class="card mb-2">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="badge bg-secondary text-uppercase">{{ $stream->platform }}</span>
-                    <strong class="ms-2">{{ $stream->label ?? 'Live Stream' }}</strong>
-                </div>
-                <div>
-                    <a href="{{ $stream->url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-danger">▶ Watch Live</a>
-                    @auth
-                        @if (auth()->id() === $tournament->organizer_id || auth()->user()->role === 'admin')
-                            <a href="{{ route('tournaments.livestreams.edit', [$tournament, $stream]) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                            <form action="{{ route('tournaments.livestreams.destroy', [$tournament, $stream]) }}" method="POST" class="d-inline" onsubmit="return confirm('Remove this stream link?');">
-                                @csrf @method('DELETE')
-                                <button class="btn btn-sm btn-outline-danger">Delete</button>
-                            </form>
-                        @endif
-                    @endauth
-                </div>
-            </div>
+            <p class="mt-2 text-slate-400">
+                {{ $tournament->title }}
+            </p>
         </div>
-    @empty
-        <p class="text-muted">No livestream links added yet.</p>
-    @endforelse
+
+        @if ($canManage)
+            <a
+                href="{{ route('tournaments.livestreams.create', $tournament) }}"
+                class="rounded-lg bg-cyan-600 px-5 py-3 font-semibold text-white transition hover:bg-cyan-500"
+            >
+                Add Livestream
+            </a>
+        @endif
+    </div>
+
+    @if ($livestreams->isEmpty())
+        <div class="rounded-xl border border-slate-800 bg-slate-900 p-10 text-center">
+            <h2 class="text-xl font-semibold text-white">
+                No livestreams available
+            </h2>
+
+            <p class="mt-2 text-slate-400">
+                @if ($canManage)
+                    Add a YouTube, Twitch, or Facebook stream when the broadcast is ready.
+                @else
+                    The organizer has not published an active livestream yet.
+                @endif
+            </p>
+        </div>
+    @else
+        <div class="space-y-4">
+            @foreach ($livestreams as $stream)
+                <article class="rounded-xl border border-slate-800 bg-slate-900 p-6">
+                    <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
+                        <div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <span class="rounded-full bg-red-950 px-3 py-1 text-xs font-semibold uppercase text-red-300">
+                                    {{ $stream->platform }}
+                                </span>
+
+                                @if ($canManage && ! $stream->is_active)
+                                    <span class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-slate-400">
+                                        INACTIVE
+                                    </span>
+                                @endif
+                            </div>
+
+                            <h2 class="mt-3 text-xl font-bold text-white">
+                                {{ $stream->label ?: 'Live Stream' }}
+                            </h2>
+
+                            <p class="mt-1 break-all text-sm text-slate-500">
+                                {{ $stream->url }}
+                            </p>
+                        </div>
+
+                        <div class="flex flex-wrap gap-3">
+                            @if ($stream->is_active)
+                                <a
+                                    href="{{ $stream->url }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition hover:bg-red-500"
+                                >
+                                    Watch Live
+                                </a>
+                            @endif
+
+                            @if ($canManage)
+                                <a
+                                    href="{{ route('tournaments.livestreams.edit', [$tournament, $stream]) }}"
+                                    class="rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-500"
+                                >
+                                    Edit
+                                </a>
+
+                                <form
+                                    method="POST"
+                                    action="{{ route('tournaments.livestreams.destroy', [$tournament, $stream]) }}"
+                                    onsubmit="return confirm('Remove this livestream link?');"
+                                >
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button
+                                        type="submit"
+                                        class="rounded-lg bg-slate-700 px-4 py-2 font-semibold text-white transition hover:bg-slate-600"
+                                    >
+                                        Delete
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                </article>
+            @endforeach
+        </div>
+    @endif
 </div>
 @endsection

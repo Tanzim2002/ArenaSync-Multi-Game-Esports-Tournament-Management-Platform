@@ -19,11 +19,29 @@ class UpdateTeamRequest extends FormRequest
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('teams', 'name')->ignore($this->route('team')),
+                Rule::unique(
+                    'teams',
+                    'name'
+                )->ignore(
+                    $this->route('team')
+                ),
             ],
-            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'preferred_game_id' => ['nullable', 'integer'],
-            'description' => ['nullable', 'string', 'max:1000'],
+            'logo' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048',
+            ],
+            'preferred_game_id' => [
+                'nullable',
+                'integer',
+                'exists:games,id',
+            ],
+            'description' => [
+                'nullable',
+                'string',
+                'max:1000',
+            ],
         ];
     }
 }

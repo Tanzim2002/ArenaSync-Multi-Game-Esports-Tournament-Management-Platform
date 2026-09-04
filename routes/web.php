@@ -1,22 +1,22 @@
 <?php
 
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\LeaderboardController;
+use App\Http\Controllers\MatchController;
+use App\Http\Controllers\MatchResultController;
 use App\Http\Controllers\OrganizerVerificationController;
+use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\Payments\TournamentPricingController;
+use App\Http\Controllers\PerformanceHistoryController;
 use App\Http\Controllers\RegistrationController;
+use App\Http\Controllers\SearchDashboardController;
+use App\Http\Controllers\SponsorController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\TeamMembershipRequestController;
 use App\Http\Controllers\TournamentController;
 use App\Http\Controllers\TournamentMessageController;
-use App\Http\Controllers\SponsorController;
-use App\Http\Controllers\LeaderboardController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PaymentController;
-use App\Http\Controllers\MatchController;
-use App\Http\Controllers\MatchResultController;
-use App\Http\Controllers\PerformanceHistoryController;
-use App\Http\Controllers\SearchDashboardController;
-
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,10 +31,12 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function (): void {
     Route::get(
         '/dashboard',
-        [SearchDashboardController::class, 'index']
+        [
+            SearchDashboardController::class,
+            'index',
+        ]
     )->name('dashboard.index');
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -42,10 +44,12 @@ Route::middleware('auth')->group(function (): void {
 |--------------------------------------------------------------------------
 */
 
-Route::resource('games', GameController::class)
-    ->only([
-        'index',
-    ]);
+Route::resource(
+    'games',
+    GameController::class
+)->only([
+    'index',
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -57,11 +61,13 @@ Route::middleware([
     'auth',
     'role:ADMIN',
 ])->group(function (): void {
-    Route::resource('games', GameController::class)
-        ->except([
-            'index',
-            'show',
-        ]);
+    Route::resource(
+        'games',
+        GameController::class
+    )->except([
+        'index',
+        'show',
+    ]);
 });
 
 /*
@@ -132,114 +138,136 @@ Route::middleware([
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function (): void {
-    Route::get(
-        '/teams/create',
-        [TeamController::class, 'create']
-    )->name('teams.create');
+Route::middleware('auth')
+    ->group(function (): void {
+        Route::get(
+            '/teams/create',
+            [
+                TeamController::class,
+                'create',
+            ]
+        )->name('teams.create');
 
-    Route::get(
-        '/teams/{team}',
-        [TeamController::class, 'show']
-    )->name('teams.show');
+        Route::get(
+            '/teams/{team}',
+            [
+                TeamController::class,
+                'show',
+            ]
+        )->name('teams.show');
 
-    Route::get(
-        '/teams/{team}/edit',
-        [TeamController::class, 'edit']
-    )->name('teams.edit');
+        Route::get(
+            '/teams/{team}/edit',
+            [
+                TeamController::class,
+                'edit',
+            ]
+        )->name('teams.edit');
 
-    Route::post(
-        '/teams',
-        [TeamController::class, 'store']
-    )->name('teams.store');
+        Route::post(
+            '/teams',
+            [
+                TeamController::class,
+                'store',
+            ]
+        )->name('teams.store');
 
-    Route::put(
-        '/teams/{team}',
-        [TeamController::class, 'update']
-    )->name('teams.update');
+        Route::put(
+            '/teams/{team}',
+            [
+                TeamController::class,
+                'update',
+            ]
+        )->name('teams.update');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Feature 5 - Team Invitations / Join Requests
-    |--------------------------------------------------------------------------
-    */
+        Route::post(
+            '/teams/{team}/invitations',
+            [
+                TeamMembershipRequestController::class,
+                'invite',
+            ]
+        )->name(
+            'teams.invitations.store'
+        );
 
-    Route::post(
-        '/teams/{team}/invitations',
-        [
-            TeamMembershipRequestController::class,
-            'invite',
-        ]
-    )->name('teams.invitations.store');
+        Route::post(
+            '/teams/{team}/join-requests',
+            [
+                TeamMembershipRequestController::class,
+                'requestToJoin',
+            ]
+        )->name(
+            'teams.join-requests.store'
+        );
 
-    Route::post(
-        '/teams/{team}/join-requests',
-        [
-            TeamMembershipRequestController::class,
-            'requestToJoin',
-        ]
-    )->name('teams.join-requests.store');
+        Route::patch(
+            '/team-membership-requests/{membershipRequest}/accept',
+            [
+                TeamMembershipRequestController::class,
+                'accept',
+            ]
+        )->name(
+            'team-membership-requests.accept'
+        );
 
-    Route::patch(
-        '/team-membership-requests/{membershipRequest}/accept',
-        [
-            TeamMembershipRequestController::class,
-            'accept',
-        ]
-    )->name('team-membership-requests.accept');
+        Route::patch(
+            '/team-membership-requests/{membershipRequest}/reject',
+            [
+                TeamMembershipRequestController::class,
+                'reject',
+            ]
+        )->name(
+            'team-membership-requests.reject'
+        );
 
-    Route::patch(
-        '/team-membership-requests/{membershipRequest}/reject',
-        [
-            TeamMembershipRequestController::class,
-            'reject',
-        ]
-    )->name('team-membership-requests.reject');
+        Route::patch(
+            '/team-membership-requests/{membershipRequest}/cancel',
+            [
+                TeamMembershipRequestController::class,
+                'cancel',
+            ]
+        )->name(
+            'team-membership-requests.cancel'
+        );
 
-    Route::patch(
-        '/team-membership-requests/{membershipRequest}/cancel',
-        [
-            TeamMembershipRequestController::class,
-            'cancel',
-        ]
-    )->name('team-membership-requests.cancel');
+        Route::patch(
+            '/teams/{team}/members/{teamMember}/role',
+            [
+                TeamMemberController::class,
+                'updateRole',
+            ]
+        )->name(
+            'teams.members.role.update'
+        );
 
-    /*
-    |--------------------------------------------------------------------------
-    | Feature 6 - Team Roles / Leave Team
-    |--------------------------------------------------------------------------
-    */
+        Route::delete(
+            '/teams/{team}/leave',
+            [
+                TeamMemberController::class,
+                'leave',
+            ]
+        )->name('teams.leave');
 
-    Route::patch(
-        '/teams/{team}/members/{teamMember}/role',
-        [
-            TeamMemberController::class,
-            'updateRole',
-        ]
-    )->name('teams.members.role.update');
+        Route::get(
+            '/teams/{team}/performance',
+            [
+                PerformanceHistoryController::class,
+                'team',
+            ]
+        )->name(
+            'performance.teams.show'
+        );
 
-    Route::delete(
-        '/teams/{team}/leave',
-        [
-            TeamMemberController::class,
-            'leave',
-        ]
-    )->name('teams.leave');
-Route::get(
-    '/teams/{team}/performance',
-    [
-        PerformanceHistoryController::class,
-        'team',
-    ]
-)->name('performance.teams.show');
-Route::get(
-    '/players/{user}/performance',
-    [
-        PerformanceHistoryController::class,
-        'player',
-    ]
-)->name('performance.players.show');
-});
+        Route::get(
+            '/players/{user}/performance',
+            [
+                PerformanceHistoryController::class,
+                'player',
+            ]
+        )->name(
+            'performance.players.show'
+        );
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -249,7 +277,10 @@ Route::get(
 
 Route::get(
     '/tournaments',
-    [TournamentController::class, 'index']
+    [
+        TournamentController::class,
+        'index',
+    ]
 )->name('tournaments.index');
 
 /*
@@ -317,12 +348,6 @@ Route::middleware([
             ]
         )->name('publish');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Feature 3 - Tournament Status Tracking
-        |--------------------------------------------------------------------------
-        */
-
         Route::patch(
             '/{tournament}/status',
             [
@@ -339,19 +364,15 @@ Route::middleware([
             ]
         )->name('cancel');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Feature 8 - Participant Approval System
-        |--------------------------------------------------------------------------
-        */
-
         Route::get(
             '/{tournament}/registrations',
             [
                 RegistrationController::class,
                 'index',
             ]
-        )->name('registrations.index');
+        )->name(
+            'registrations.index'
+        );
 
         Route::patch(
             '/{tournament}/registrations/{registration}/approve',
@@ -359,7 +380,9 @@ Route::middleware([
                 RegistrationController::class,
                 'approve',
             ]
-        )->name('registrations.approve');
+        )->name(
+            'registrations.approve'
+        );
 
         Route::patch(
             '/{tournament}/registrations/{registration}/reject',
@@ -367,34 +390,87 @@ Route::middleware([
                 RegistrationController::class,
                 'reject',
             ]
-        )->name('registrations.reject');
+        )->name(
+            'registrations.reject'
+        );
     });
+
+/*
+|--------------------------------------------------------------------------
+| Feature 9 - Free / Paid Tournament Setup
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')
+    ->prefix('tournaments')
+    ->name('tournaments.')
+    ->group(function (): void {
+        Route::get(
+            '/{tournament}/pricing',
+            [
+                TournamentPricingController::class,
+                'edit',
+            ]
+        )->name('pricing.edit');
+
+        Route::put(
+            '/{tournament}/pricing',
+            [
+                TournamentPricingController::class,
+                'update',
+            ]
+        )->name('pricing.update');
+    });
+
 /*
 |--------------------------------------------------------------------------
 | Feature 10 - Dummy Payment Submission
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:PLAYER'])->group(function (): void {
+Route::middleware([
+    'auth',
+    'role:PLAYER',
+])->group(function (): void {
     Route::get(
         '/registrations/{registration}/payment/create',
-        [PaymentController::class, 'create']
-    )->name('registrations.payment.create');
+        [
+            PaymentController::class,
+            'create',
+        ]
+    )->name(
+        'registrations.payment.create'
+    );
 
     Route::post(
         '/registrations/{registration}/payment',
-        [PaymentController::class, 'store']
-    )->name('registrations.payment.store');
+        [
+            PaymentController::class,
+            'store',
+        ]
+    )->name(
+        'registrations.payment.store'
+    );
 
     Route::get(
         '/registrations/{registration}/payment',
-        [PaymentController::class, 'show']
-    )->name('registrations.payment.show');
+        [
+            PaymentController::class,
+            'show',
+        ]
+    )->name(
+        'registrations.payment.show'
+    );
 
     Route::get(
         '/tournaments/{tournament}/payment',
-        [PaymentController::class, 'mine']
-    )->name('tournaments.payment.mine');
+        [
+            PaymentController::class,
+            'mine',
+        ]
+    )->name(
+        'tournaments.payment.mine'
+    );
 });
 
 /*
@@ -403,31 +479,43 @@ Route::middleware(['auth', 'role:PLAYER'])->group(function (): void {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:ORGANIZER'])
+Route::middleware([
+    'auth',
+    'role:ORGANIZER',
+])
     ->prefix('tournaments')
     ->name('tournaments.')
     ->group(function (): void {
         Route::get(
             '/{tournament}/payments',
-            [PaymentController::class, 'index']
+            [
+                PaymentController::class,
+                'index',
+            ]
         )->name('payments.index');
 
         Route::patch(
             '/{tournament}/payments/{payment}/verify',
-            [PaymentController::class, 'verify']
+            [
+                PaymentController::class,
+                'verify',
+            ]
         )->name('payments.verify');
 
         Route::patch(
             '/{tournament}/payments/{payment}/reject',
-            [PaymentController::class, 'reject']
+            [
+                PaymentController::class,
+                'reject',
+            ]
         )->name('payments.reject');
     });
+
 /*
 |--------------------------------------------------------------------------
 | Feature 13 - Tournament Livestream Management
 |--------------------------------------------------------------------------
 */
-
 
 Route::get(
     '/tournaments/{tournament}/livestreams',
@@ -435,24 +523,23 @@ Route::get(
         \App\Http\Controllers\Payments\LivestreamController::class,
         'index',
     ]
-)->name('tournaments.livestreams.index');
+)->name(
+    'tournaments.livestreams.index'
+);
 
-
-
-Route::middleware(['auth'])
+Route::middleware('auth')
     ->prefix('tournaments')
     ->name('tournaments.')
     ->group(function (): void {
-
-
         Route::get(
             '/{tournament}/livestreams/create',
             [
                 \App\Http\Controllers\Payments\LivestreamController::class,
                 'create',
             ]
-        )->name('livestreams.create');
-
+        )->name(
+            'livestreams.create'
+        );
 
         Route::post(
             '/{tournament}/livestreams',
@@ -460,8 +547,9 @@ Route::middleware(['auth'])
                 \App\Http\Controllers\Payments\LivestreamController::class,
                 'store',
             ]
-        )->name('livestreams.store');
-
+        )->name(
+            'livestreams.store'
+        );
 
         Route::get(
             '/{tournament}/livestreams/{livestream}/edit',
@@ -469,8 +557,9 @@ Route::middleware(['auth'])
                 \App\Http\Controllers\Payments\LivestreamController::class,
                 'edit',
             ]
-        )->name('livestreams.edit');
-
+        )->name(
+            'livestreams.edit'
+        );
 
         Route::put(
             '/{tournament}/livestreams/{livestream}',
@@ -478,8 +567,9 @@ Route::middleware(['auth'])
                 \App\Http\Controllers\Payments\LivestreamController::class,
                 'update',
             ]
-        )->name('livestreams.update');
-
+        )->name(
+            'livestreams.update'
+        );
 
         Route::delete(
             '/{tournament}/livestreams/{livestream}',
@@ -487,10 +577,11 @@ Route::middleware(['auth'])
                 \App\Http\Controllers\Payments\LivestreamController::class,
                 'destroy',
             ]
-        )->name('livestreams.destroy');
-
-
+        )->name(
+            'livestreams.destroy'
+        );
     });
+
 /*
 |--------------------------------------------------------------------------
 | Feature 12 - Match Schedule & Timeline Management
@@ -499,69 +590,125 @@ Route::middleware(['auth'])
 
 Route::get(
     '/tournaments/{tournament}/matches',
-    [MatchController::class, 'index']
-)->name('tournaments.matches.index');
+    [
+        MatchController::class,
+        'index',
+    ]
+)->name(
+    'tournaments.matches.index'
+);
 
 Route::get(
     '/matches/{match}',
-    [MatchController::class, 'show']
+    [
+        MatchController::class,
+        'show',
+    ]
 )->name('matches.show');
 
-Route::middleware(['auth', 'role:ORGANIZER'])
+Route::middleware([
+    'auth',
+    'role:ORGANIZER',
+])
     ->prefix('tournaments')
     ->name('tournaments.')
     ->group(function (): void {
         Route::get(
             '/{tournament}/matches/create',
-            [MatchController::class, 'create']
+            [
+                MatchController::class,
+                'create',
+            ]
         )->name('matches.create');
 
         Route::post(
             '/{tournament}/matches',
-            [MatchController::class, 'store']
+            [
+                MatchController::class,
+                'store',
+            ]
         )->name('matches.store');
     });
 
-Route::middleware(['auth', 'role:ORGANIZER'])->group(function (): void {
+Route::middleware([
+    'auth',
+    'role:ORGANIZER',
+])->group(function (): void {
     Route::patch(
         '/matches/{match}/status',
-        [MatchController::class, 'changeStatus']
-    )->name('matches.status.update');
-});    
+        [
+            MatchController::class,
+            'changeStatus',
+        ]
+    )->name(
+        'matches.status.update'
+    );
+});
+
 /*
 |--------------------------------------------------------------------------
 | Feature 14 - Match Result Submission & Verification
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function (): void {
-    Route::get(
-        '/matches/{match}/result',
-        [MatchResultController::class, 'create']
-    )->name('match-results.create');
+Route::middleware('auth')
+    ->group(function (): void {
+        Route::get(
+            '/matches/{match}/result',
+            [
+                MatchResultController::class,
+                'create',
+            ]
+        )->name(
+            'match-results.create'
+        );
 
-    Route::post(
-        '/matches/{match}/result',
-        [MatchResultController::class, 'store']
-    )->name('match-results.store');
-});
+        Route::post(
+            '/matches/{match}/result',
+            [
+                MatchResultController::class,
+                'store',
+            ]
+        )->name(
+            'match-results.store'
+        );
+    });
 
-Route::middleware(['auth', 'role:ORGANIZER'])->group(function (): void {
+Route::middleware([
+    'auth',
+    'role:ORGANIZER',
+])->group(function (): void {
     Route::get(
         '/tournaments/{tournament}/results',
-        [MatchResultController::class, 'index']
-    )->name('match-results.index');
+        [
+            MatchResultController::class,
+            'index',
+        ]
+    )->name(
+        'match-results.index'
+    );
 
     Route::patch(
         '/match-results/{result}/verify',
-        [MatchResultController::class, 'verify']
-    )->name('match-results.verify');
+        [
+            MatchResultController::class,
+            'verify',
+        ]
+    )->name(
+        'match-results.verify'
+    );
 
     Route::patch(
         '/match-results/{result}/reject',
-        [MatchResultController::class, 'reject']
-    )->name('match-results.reject');
+        [
+            MatchResultController::class,
+            'reject',
+        ]
+    )->name(
+        'match-results.reject'
+    );
 });
+
 /*
 |--------------------------------------------------------------------------
 | Feature 7 - Tournament Registration
@@ -581,7 +728,9 @@ Route::middleware([
                 RegistrationController::class,
                 'create',
             ]
-        )->name('registrations.create');
+        )->name(
+            'registrations.create'
+        );
 
         Route::post(
             '/{tournament}/register',
@@ -589,7 +738,9 @@ Route::middleware([
                 RegistrationController::class,
                 'store',
             ]
-        )->name('registrations.store');
+        )->name(
+            'registrations.store'
+        );
     });
 
 /*
@@ -604,19 +755,33 @@ Route::middleware('auth')
     ->group(function (): void {
         Route::get(
             '/{tournament}/chat',
-            [TournamentMessageController::class, 'index']
+            [
+                TournamentMessageController::class,
+                'index',
+            ]
         )->name('chat');
 
         Route::post(
             '/{tournament}/chat',
-            [TournamentMessageController::class, 'storeChat']
-        )->name('chat.store');
+            [
+                TournamentMessageController::class,
+                'storeChat',
+            ]
+        )->name(
+            'chat.store'
+        );
 
         Route::post(
             '/{tournament}/announcements',
-            [TournamentMessageController::class, 'storeAnnouncement']
-        )->name('announcements.store');
+            [
+                TournamentMessageController::class,
+                'storeAnnouncement',
+            ]
+        )->name(
+            'announcements.store'
+        );
     });
+
 /*
 |--------------------------------------------------------------------------
 | Public Tournament Details
@@ -637,18 +802,32 @@ Route::get(
 |--------------------------------------------------------------------------
 */
 
-Route::resource('games', GameController::class)
-    ->only([
-        'show',
-    ]);
+Route::resource(
+    'games',
+    GameController::class
+)->only([
+    'show',
+]);
 
 require __DIR__.'/auth.php';
-Route::resource('sponsors', SponsorController::class);
+
+Route::resource(
+    'sponsors',
+    SponsorController::class
+);
+
 /*
 |--------------------------------------------------------------------------
 | Leaderboard
 |--------------------------------------------------------------------------
 */
 
-Route::get('/leaderboard', [LeaderboardController::class, 'index'])
-    ->name('leaderboard.index');
+Route::get(
+    '/leaderboard',
+    [
+        LeaderboardController::class,
+        'index',
+    ]
+)->name(
+    'leaderboard.index'
+);

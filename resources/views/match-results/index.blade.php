@@ -1,708 +1,249 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@extends('layouts.app')
 
-    <title>Result Verification - ArenaSync</title>
+@section('title', 'Match Result Verification | ArenaSync')
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
-            background:
-                radial-gradient(circle at top right, rgba(0, 190, 240, 0.08), transparent 32%),
-                #07111f;
-            color: #eaf6ff;
-        }
-
-        .topbar {
-            min-height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 42px;
-            border-bottom: 1px solid #1d3248;
-            background: #081523;
-        }
-
-        .brand {
-            color: #18c7f4;
-            font-size: 23px;
-            font-weight: 700;
-        }
-
-        .user-area {
-            color: #a9bccb;
-            font-size: 14px;
-        }
-
-        .page {
-            width: min(1180px, calc(100% - 40px));
-            margin: 0 auto;
-            padding: 40px 0 60px;
-        }
-
-        .back-link {
-            display: inline-block;
-            color: #76d1f7;
-            text-decoration: none;
-            margin-bottom: 22px;
-            font-size: 14px;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        .heading {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            gap: 20px;
-            margin-bottom: 26px;
-        }
-
-        .heading h1 {
-            margin: 0 0 7px;
-            font-size: 29px;
-        }
-
-        .heading p {
-            margin: 0;
-            color: #899fb2;
-            line-height: 1.5;
-        }
-
-        .summary-badge {
-            background: #0d1d2c;
-            border: 1px solid #284056;
-            border-radius: 9px;
-            padding: 11px 15px;
-            color: #9bdff7;
-            white-space: nowrap;
-            font-size: 13px;
-        }
-
-        .alert {
-            border-radius: 8px;
-            margin-bottom: 22px;
-            padding: 14px 17px;
-            font-size: 14px;
-        }
-
-        .alert-success {
-            color: #9ff5c1;
-            background: rgba(34, 197, 94, 0.09);
-            border: 1px solid rgba(34, 197, 94, 0.35);
-        }
-
-        .alert-error {
-            color: #ffb6b6;
-            background: rgba(239, 68, 68, 0.09);
-            border: 1px solid rgba(239, 68, 68, 0.35);
-        }
-
-        .result-list {
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
-        .result-card {
-            background: #0d1b2b;
-            border: 1px solid #20384d;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 15px 38px rgba(0, 0, 0, 0.18);
-        }
-
-        .result-card-header {
-            padding: 18px 22px;
-            border-bottom: 1px solid #20384d;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .match-title {
-            margin: 0 0 5px;
-            font-size: 18px;
-            font-weight: 700;
-        }
-
-        .match-meta {
-            color: #8298a9;
-            font-size: 13px;
-        }
-
-        .status {
-            display: inline-flex;
-            align-items: center;
-            padding: 6px 11px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .4px;
-        }
-
-        .status-pending {
-            color: #ffd27c;
-            background: rgba(245, 158, 11, 0.10);
-            border: 1px solid rgba(245, 158, 11, 0.38);
-        }
-
-        .status-verified {
-            color: #91f2b8;
-            background: rgba(34, 197, 94, 0.10);
-            border: 1px solid rgba(34, 197, 94, 0.38);
-        }
-
-        .status-rejected {
-            color: #ffaaa9;
-            background: rgba(239, 68, 68, 0.10);
-            border: 1px solid rgba(239, 68, 68, 0.38);
-        }
-
-        .result-body {
-            padding: 25px 22px;
-        }
-
-        .score-area {
-            display: grid;
-            grid-template-columns: 1fr 80px 1fr;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-
-        .team-box {
-            background: #101f30;
-            border: 1px solid #263f55;
-            border-radius: 9px;
-            padding: 19px;
-            text-align: center;
-        }
-
-        .team-name {
-            color: #cbd9e4;
-            font-size: 15px;
-            margin-bottom: 10px;
-        }
-
-        .score {
-            color: #ffffff;
-            font-size: 32px;
-            line-height: 1;
-            font-weight: 700;
-        }
-
-        .winner {
-            display: inline-block;
-            margin-top: 10px;
-            color: #7fe5ad;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .vs {
-            text-align: center;
-            color: #71889b;
-            font-size: 15px;
-            font-weight: 700;
-        }
-
-        .details {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 13px;
-            margin-bottom: 20px;
-        }
-
-        .detail {
-            background: #091725;
-            border: 1px solid #1d3549;
-            border-radius: 8px;
-            padding: 13px 14px;
-        }
-
-        .detail-label {
-            color: #748c9f;
-            font-size: 11px;
-            text-transform: uppercase;
-            margin-bottom: 6px;
-            letter-spacing: .5px;
-        }
-
-        .detail-value {
-            color: #dce8f0;
-            font-size: 13px;
-            word-break: break-word;
-        }
-
-        .remarks {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #091725;
-            border: 1px solid #1d3549;
-            border-radius: 8px;
-        }
-
-        .remarks-title {
-            font-size: 12px;
-            color: #8198ab;
-            margin-bottom: 7px;
-            font-weight: 700;
-        }
-
-        .remarks-text {
-            color: #cad7e1;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .review-section {
-            border-top: 1px solid #20384d;
-            padding-top: 20px;
-        }
-
-        .review-title {
-            margin: 0 0 14px;
-            font-size: 15px;
-        }
-
-        .review-note {
-            width: 100%;
-            min-height: 88px;
-            resize: vertical;
-            background: #071522;
-            border: 1px solid #2a455d;
-            border-radius: 7px;
-            padding: 12px 13px;
-            color: white;
-            outline: none;
-            font-family: inherit;
-            font-size: 13px;
-        }
-
-        .review-note:focus {
-            border-color: #15bde9;
-            box-shadow: 0 0 0 3px rgba(21, 189, 233, 0.08);
-        }
-
-        .actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 12px;
-        }
-
-        .btn {
-            border-radius: 7px;
-            padding: 11px 18px;
-            border: 0;
-            font-weight: 700;
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .btn-verify {
-            background: #1cc875;
-            color: #04160d;
-        }
-
-        .btn-verify:hover {
-            background: #42dd92;
-        }
-
-        .btn-reject {
-            background: #de4552;
-            color: white;
-        }
-
-        .btn-reject:hover {
-            background: #ef5965;
-        }
-
-        .reviewed-box {
-            padding: 14px 16px;
-            border-radius: 8px;
-            background: #091725;
-            border: 1px solid #243c51;
-            color: #9db0bf;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-
-        .empty {
-            background: #0d1b2b;
-            border: 1px dashed #31516a;
-            border-radius: 12px;
-            text-align: center;
-            padding: 55px 25px;
-        }
-
-        .empty-icon {
-            font-size: 36px;
-            margin-bottom: 14px;
-        }
-
-        .empty h2 {
-            margin: 0 0 8px;
-            font-size: 20px;
-        }
-
-        .empty p {
-            margin: 0;
-            color: #8198aa;
-        }
-
-        @media (max-width: 760px) {
-            .topbar {
-                padding: 0 20px;
-            }
-
-            .heading {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .score-area {
-                grid-template-columns: 1fr;
-            }
-
-            .details {
-                grid-template-columns: 1fr;
-            }
-
-            .actions {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-<header class="topbar">
-    <div class="brand">
-        ArenaSync
+@section('content')
+<div class="mx-auto max-w-6xl">
+    <div class="mb-6">
+        <a
+            href="{{ route('tournaments.show', $tournament) }}"
+            class="text-sm font-medium text-cyan-400 hover:text-cyan-300"
+        >
+            â† Back to Tournament
+        </a>
     </div>
 
-    <div class="user-area">
-        Organizer · Result Verification
-    </div>
-</header>
-
-<main class="page">
-
-    <a
-        href="{{ route('tournaments.show', $tournament) }}"
-        class="back-link"
-    >
-        ← Back to Tournament
-    </a>
-
-    <div class="heading">
+    <div class="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-            <h1>Match Result Verification</h1>
+            <h1 class="text-3xl font-bold text-cyan-400">
+                Match Result Verification
+            </h1>
 
-            <p>
-                Review submitted match results for
-                <strong>{{ $tournament->name }}</strong>
-                and verify or reject each submission.
+            <p class="mt-2 text-slate-400">
+                Review submissions for
+                <span class="font-semibold text-slate-200">
+                    {{ $tournament->title }}
+                </span>.
             </p>
         </div>
 
-        <div class="summary-badge">
+        <span class="rounded-full bg-slate-800 px-4 py-2 text-sm font-semibold text-slate-300">
             {{ $results->count() }}
-            {{ $results->count() === 1 ? 'Submission' : 'Submissions' }}
-        </div>
+            {{ $results->count() === 1 ? 'submission' : 'submissions' }}
+        </span>
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
-
     @if ($errors->any())
-        <div class="alert alert-error">
+        <div class="mb-6 rounded-lg border border-red-700 bg-red-950/50 p-4 text-red-200">
             {{ $errors->first() }}
         </div>
     @endif
 
     @if ($results->isEmpty())
+        <div class="rounded-xl border border-slate-800 bg-slate-900 p-10 text-center">
+            <h2 class="text-xl font-semibold text-white">
+                No result submissions yet
+            </h2>
 
-        <section class="empty">
-            <div class="empty-icon">✓</div>
-
-            <h2>No result submissions yet</h2>
-
-            <p>
-                Submitted match results for this tournament will appear here
-                for organizer verification.
+            <p class="mt-2 text-slate-400">
+                Participant submissions will appear here for organizer review.
             </p>
-        </section>
-
+        </div>
     @else
-
-        <section class="result-list">
-
+        <div class="space-y-5">
             @foreach ($results as $result)
-
                 @php
                     $match = $result->match;
                 @endphp
 
-                <article class="result-card">
-
-                    <div class="result-card-header">
-
+                <article class="rounded-xl border border-slate-800 bg-slate-900 p-6">
+                    <div class="flex flex-wrap items-start justify-between gap-4">
                         <div>
-                            <div class="match-title">
+                            <h2 class="text-xl font-bold text-white">
                                 {{ $match?->teamOne?->name ?? 'Team One' }}
                                 vs
                                 {{ $match?->teamTwo?->name ?? 'Team Two' }}
-                            </div>
+                            </h2>
 
-                            <div class="match-meta">
+                            <p class="mt-1 text-sm text-slate-500">
                                 Match #{{ $match?->id ?? '-' }}
-
                                 @if ($match?->round)
-                                    · Round {{ $match->round }}
+                                    Â· {{ $match->round }}
                                 @endif
-                            </div>
+                            </p>
                         </div>
 
                         @if ($result->isPending())
-                            <span class="status status-pending">
+                            <span class="rounded-full bg-amber-950 px-3 py-1 text-xs font-semibold text-amber-300">
                                 PENDING
                             </span>
-
                         @elseif ($result->isVerified())
-                            <span class="status status-verified">
+                            <span class="rounded-full bg-emerald-950 px-3 py-1 text-xs font-semibold text-emerald-300">
                                 VERIFIED
                             </span>
-
-                        @elseif ($result->isRejected())
-                            <span class="status status-rejected">
+                        @else
+                            <span class="rounded-full bg-red-950 px-3 py-1 text-xs font-semibold text-red-300">
                                 REJECTED
                             </span>
                         @endif
-
                     </div>
 
-                    <div class="result-body">
+                    <div class="mt-6 grid items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
+                        <div class="rounded-lg bg-slate-950 p-5 text-center">
+                            <p class="font-semibold text-slate-300">
+                                {{ $match?->teamOne?->name ?? 'Team One' }}
+                            </p>
 
-                        <div class="score-area">
+                            <p class="mt-2 text-4xl font-black text-white">
+                                {{ $result->team_one_score }}
+                            </p>
 
-                            <div class="team-box">
-
-                                <div class="team-name">
-                                    {{ $match?->teamOne?->name ?? 'Team One' }}
-                                </div>
-
-                                <div class="score">
-                                    {{ $result->team_one_score }}
-                                </div>
-
-                                @if (
-                                    $result->winner_team_id &&
-                                    $result->winner_team_id === $match?->team_one_id
-                                )
-                                    <div class="winner">
-                                        Winner
-                                    </div>
-                                @endif
-
-                            </div>
-
-                            <div class="vs">
-                                VS
-                            </div>
-
-                            <div class="team-box">
-
-                                <div class="team-name">
-                                    {{ $match?->teamTwo?->name ?? 'Team Two' }}
-                                </div>
-
-                                <div class="score">
-                                    {{ $result->team_two_score }}
-                                </div>
-
-                                @if (
-                                    $result->winner_team_id &&
-                                    $result->winner_team_id === $match?->team_two_id
-                                )
-                                    <div class="winner">
-                                        Winner
-                                    </div>
-                                @endif
-
-                            </div>
-
+                            @if (
+                                $result->winner_team_id
+                                && $result->winner_team_id === $match?->team_one_id
+                            )
+                                <p class="mt-2 text-xs font-semibold text-emerald-300">
+                                    WINNER
+                                </p>
+                            @endif
                         </div>
 
-                        <div class="details">
-
-                            <div class="detail">
-                                <div class="detail-label">
-                                    Submitted By
-                                </div>
-
-                                <div class="detail-value">
-                                    {{ $result->submittedBy?->name ?? 'Unknown User' }}
-                                </div>
-                            </div>
-
-                            <div class="detail">
-                                <div class="detail-label">
-                                    Submitted At
-                                </div>
-
-                                <div class="detail-value">
-                                    {{ $result->submitted_at?->format('M d, Y h:i A') ?? '-' }}
-                                </div>
-                            </div>
-
-                            <div class="detail">
-                                <div class="detail-label">
-                                    Winner
-                                </div>
-
-                                <div class="detail-value">
-
-                                    @if ($result->winnerTeam)
-                                        {{ $result->winnerTeam->name }}
-                                    @else
-                                        Draw
-                                    @endif
-
-                                </div>
-                            </div>
-
+                        <div class="font-bold text-slate-600">
+                            VS
                         </div>
 
-                        @if ($result->remarks)
+                        <div class="rounded-lg bg-slate-950 p-5 text-center">
+                            <p class="font-semibold text-slate-300">
+                                {{ $match?->teamTwo?->name ?? 'Team Two' }}
+                            </p>
 
-                            <div class="remarks">
-                                <div class="remarks-title">
-                                    Participant Remarks
-                                </div>
+                            <p class="mt-2 text-4xl font-black text-white">
+                                {{ $result->team_two_score }}
+                            </p>
 
-                                <div class="remarks-text">
-                                    {{ $result->remarks }}
-                                </div>
-                            </div>
+                            @if (
+                                $result->winner_team_id
+                                && $result->winner_team_id === $match?->team_two_id
+                            )
+                                <p class="mt-2 text-xs font-semibold text-emerald-300">
+                                    WINNER
+                                </p>
+                            @endif
+                        </div>
+                    </div>
 
-                        @endif
+                    <div class="mt-5 grid gap-4 sm:grid-cols-3">
+                        <div class="rounded-lg bg-slate-950 p-4">
+                            <p class="text-xs uppercase text-slate-500">Submitted By</p>
+                            <p class="mt-1 font-semibold text-slate-200">
+                                {{ $result->submittedBy?->name ?? 'Unknown User' }}
+                            </p>
+                        </div>
 
-                        @if ($result->isPending())
+                        <div class="rounded-lg bg-slate-950 p-4">
+                            <p class="text-xs uppercase text-slate-500">Submitted At</p>
+                            <p class="mt-1 font-semibold text-slate-200">
+                                {{ $result->submitted_at?->format('M d, Y h:i A') ?? 'â€”' }}
+                            </p>
+                        </div>
 
-                            <div class="review-section">
+                        <div class="rounded-lg bg-slate-950 p-4">
+                            <p class="text-xs uppercase text-slate-500">Winner</p>
+                            <p class="mt-1 font-semibold text-slate-200">
+                                {{ $result->winnerTeam?->name ?? 'Draw' }}
+                            </p>
+                        </div>
+                    </div>
 
-                                <h3 class="review-title">
-                                    Organizer Decision
-                                </h3>
+                    @if ($result->remarks)
+                        <div class="mt-5 rounded-lg border border-slate-800 bg-slate-950 p-4">
+                            <p class="text-xs font-semibold uppercase text-slate-500">
+                                Participant Remarks
+                            </p>
 
-                                <form
-                                    method="POST"
-                                    action="{{ route('match-results.verify', $result) }}"
+                            <p class="mt-2 text-sm leading-6 text-slate-300">
+                                {{ $result->remarks }}
+                            </p>
+                        </div>
+                    @endif
+
+                    @if ($result->isPending())
+                        <div class="mt-6 grid gap-4 md:grid-cols-2">
+                            <form
+                                method="POST"
+                                action="{{ route('match-results.verify', $result) }}"
+                                class="rounded-lg border border-emerald-900 bg-emerald-950/20 p-4"
+                            >
+                                @csrf
+                                @method('PATCH')
+
+                                <p class="text-sm text-slate-400">
+                                    Confirm the submitted score and winner.
+                                </p>
+
+                                <button
+                                    type="submit"
+                                    class="mt-4 rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white hover:bg-emerald-500"
                                 >
-                                    @csrf
-                                    @method('PATCH')
+                                    Verify Result
+                                </button>
+                            </form>
 
-                                    <div class="actions">
-                                        <button
-                                            type="submit"
-                                            class="btn btn-verify"
-                                        >
-                                            ✓ Verify Result
-                                        </button>
-                                    </div>
-                                </form>
+                            <form
+                                method="POST"
+                                action="{{ route('match-results.reject', $result) }}"
+                                class="rounded-lg border border-red-900 bg-red-950/20 p-4"
+                            >
+                                @csrf
+                                @method('PATCH')
 
-                                <form
-                                    method="POST"
-                                    action="{{ route('match-results.reject', $result) }}"
+                                <label class="block text-sm font-medium text-slate-200">
+                                    Correction Note
+                                </label>
+
+                                <textarea
+                                    name="review_notes"
+                                    rows="3"
+                                    maxlength="2000"
+                                    required
+                                    placeholder="Explain what needs to be corrected..."
+                                    class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white outline-none focus:border-red-500"
+                                ></textarea>
+
+                                <button
+                                    type="submit"
+                                    class="mt-3 rounded-lg bg-red-600 px-5 py-2.5 font-semibold text-white hover:bg-red-500"
                                 >
-                                    @csrf
-                                    @method('PATCH')
+                                    Reject Result
+                                </button>
+                            </form>
+                        </div>
+                    @else
+                        <div class="mt-6 rounded-lg border border-slate-800 bg-slate-950 p-4 text-sm text-slate-300">
+                            @if ($result->isVerified())
+                                This result has been verified.
+                            @else
+                                <span class="font-semibold text-red-300">
+                                    Result rejected.
+                                </span>
 
-                                    <textarea
-                                        name="review_notes"
-                                        class="review-note"
-                                        maxlength="2000"
-                                        placeholder="Reason for rejection or correction instructions..."
-                                    ></textarea>
-
-                                    <div class="actions">
-                                        <button
-                                            type="submit"
-                                            class="btn btn-reject"
-                                        >
-                                            Reject & Return for Correction
-                                        </button>
-                                    </div>
-
-                                </form>
-
-                            </div>
-
-                        @else
-
-                            <div class="reviewed-box">
-
-                                @if ($result->isVerified())
-
-                                    This result has been verified.
-
-                                @elseif ($result->isRejected())
-
-                                    <strong>Result rejected.</strong>
-
-                                    @if ($result->review_notes)
-                                        <br>
-                                        Review note:
+                                @if ($result->review_notes)
+                                    <span class="ml-1">
                                         {{ $result->review_notes }}
-                                    @endif
-
+                                    </span>
                                 @endif
+                            @endif
 
-                                @if ($result->reviewed_at)
-                                    <br>
-                                    Reviewed:
-                                    {{ $result->reviewed_at->format('M d, Y h:i A') }}
-                                @endif
-
-                            </div>
-
-                        @endif
-
-                    </div>
-
+                            @if ($result->reviewed_at)
+                                <span class="mt-1 block text-slate-500">
+                                    Reviewed {{ $result->reviewed_at->format('M d, Y h:i A') }}
+                                </span>
+                            @endif
+                        </div>
+                    @endif
                 </article>
-
             @endforeach
-
-        </section>
-
+        </div>
     @endif
-
-</main>
-
-</body>
-</html>
+</div>
+@endsection

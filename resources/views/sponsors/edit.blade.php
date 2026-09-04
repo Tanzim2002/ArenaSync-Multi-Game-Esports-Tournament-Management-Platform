@@ -1,84 +1,53 @@
 @extends('layouts.app')
 
+@section('title', 'Edit Sponsor | ArenaSync')
+
 @section('content')
+<div class="mx-auto max-w-4xl">
+    <div class="mb-6">
+        <a
+            href="{{ route('sponsors.show', $sponsor) }}"
+            class="text-sm font-medium text-cyan-400 hover:text-cyan-300"
+        >
+            â† Back to Sponsor
+        </a>
+    </div>
 
-<div class="container">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-cyan-400">
+            Edit Sponsor
+        </h1>
 
-    <h1>Edit Sponsor</h1>
+        <p class="mt-2 text-slate-400">
+            {{ $sponsor->name }}
+        </p>
+    </div>
 
-    <form action="{{ route('sponsors.update', $ponsor->id) }}" method="POST">
+    <form
+        method="POST"
+        action="{{ route('sponsors.update', $sponsor) }}"
+        class="rounded-xl border border-slate-800 bg-slate-900 p-6"
+    >
         @csrf
         @method('PUT')
 
-        <div>
-            <label>Name</label>
-            <input type="text" name="name" value="{{ $sponsor->name }}" required>
+        @include('sponsors._form')
+
+        <div class="mt-6 flex flex-wrap gap-3">
+            <button
+                type="submit"
+                class="rounded-lg bg-cyan-600 px-6 py-3 font-semibold text-white hover:bg-cyan-500"
+            >
+                Update Sponsor
+            </button>
+
+            <a
+                href="{{ route('sponsors.show', $sponsor) }}"
+                class="rounded-lg bg-slate-700 px-6 py-3 font-semibold text-white hover:bg-slate-600"
+            >
+                Cancel
+            </a>
         </div>
-
-        <br>
-
-        <div>
-            <label>Logo</label>
-            <input type="text" name="logo" value="{{ $sponsor->logo }}">
-        </div>
-
-        <br>
-
-        <div>
-            <label>Website</label>
-            <input type="text" name="website" value="{{ $sponsor->website }}">
-        </div>
-
-        <br>
-
-        <div>
-            <label>Contact Person</label>
-            <input type="text" name="contact_person" value="{{ $sponsor->contact_person }}">
-        </div>
-
-        <br>
-
-        <div>
-            <label>Email</label>
-            <input type="email" name="email" value="{{ $sponsor->email }}">
-        </div>
-
-        <br>
-
-        <div>
-            <label>Phone</label>
-            <input type="text" name="phone" value="{{ $sponsor->phone }}">
-        </div>
-
-        <br>
-
-        <div>
-            <label>Sponsorship Type</label>
-            <input type="text" name="sponsorship_type" value="{{ $sponsor->sponsorship_type }}">
-        </div>
-
-        <br>
-
-        <div>
-            <label>Amount</label>
-            <input type="number" step="0.01" name="amount" value="{{ $sponsor->amount }}">
-        </div>
-
-        <br>
-
-        <div>
-            <label>Description</label>
-            <textarea name="description">{{ $sponsor->description }}</textarea>
-        </div>
-
-        <br>
-
-        <button type="submit">
-            Update Sponsor
-        </button>
-
     </form>
-
 </div>
-
 @endsection

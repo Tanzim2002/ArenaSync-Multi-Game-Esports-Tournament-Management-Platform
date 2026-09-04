@@ -3,22 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Models\MatchResult;
-use App\Models\Tournament;
+use Illuminate\View\View;
 
 class LeaderboardController extends Controller
 {
-    public function index()
+    public function index(): View
     {
-        $leaderboard = MatchResult::select(
-                'winner_team_id'
-            )
+        $leaderboard = MatchResult::query()
+            ->select('winner_team_id')
             ->selectRaw('COUNT(*) as wins')
-            ->where('status', MatchResult::STATUS_VERIFIED)
+            ->where(
+                'status',
+                MatchResult::STATUS_VERIFIED
+            )
+            ->whereNotNull('winner_team_id')
             ->groupBy('winner_team_id')
             ->orderByDesc('wins')
             ->with('winnerTeam')
             ->get();
 
-        return view('leaderboard.index', compact('leaderboard'));
+        return view(
+            'leaderboard.index',
+            compact('leaderboard')
+        );
     }
 }
