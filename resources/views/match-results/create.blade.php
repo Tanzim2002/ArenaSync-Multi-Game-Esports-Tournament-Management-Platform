@@ -1,324 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@extends('layouts.app')
 
-    <title>Submit Match Result - ArenaSync</title>
+@section('title', 'Submit Match Result | ArenaSync')
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
-            background:
-                radial-gradient(circle at top right, rgba(0, 174, 239, 0.10), transparent 35%),
-                #07111f;
-            color: #eaf6ff;
-        }
-
-        .topbar {
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 42px;
-            border-bottom: 1px solid #1d3248;
-            background: #081523;
-        }
-
-        .brand {
-            font-size: 23px;
-            font-weight: 700;
-            color: #15c7f4;
-        }
-
-        .topbar-user {
-            color: #b9c8d6;
-            font-size: 14px;
-        }
-
-        .page {
-            max-width: 1050px;
-            margin: 0 auto;
-            padding: 42px 25px 60px;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-bottom: 22px;
-            color: #75cfff;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        .heading {
-            margin-bottom: 28px;
-        }
-
-        .heading h1 {
-            margin: 0 0 8px;
-            font-size: 29px;
-        }
-
-        .heading p {
-            margin: 0;
-            color: #8fa4b7;
-        }
-
-        .match-card {
-            background: #0d1b2b;
-            border: 1px solid #20364c;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
-        }
-
-        .match-header {
-            padding: 22px 26px;
-            border-bottom: 1px solid #20364c;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .match-header h2 {
-            margin: 0 0 5px;
-            font-size: 21px;
-        }
-
-        .match-header p {
-            margin: 0;
-            color: #8198ab;
-            font-size: 13px;
-        }
-
-        .status {
-            padding: 7px 12px;
-            border-radius: 20px;
-            background: rgba(15, 177, 232, 0.12);
-            border: 1px solid #138eb7;
-            color: #3ed2ff;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .form-area {
-            padding: 30px;
-        }
-
-        .teams {
-            display: grid;
-            grid-template-columns: 1fr 90px 1fr;
-            gap: 22px;
-            align-items: center;
-            margin-bottom: 32px;
-        }
-
-        .team {
-            background: #101f30;
-            border: 1px solid #263d54;
-            border-radius: 10px;
-            padding: 24px;
-            text-align: center;
-        }
-
-        .team-name {
-            font-size: 19px;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
-
-        .team-label {
-            color: #7f96a9;
-            font-size: 12px;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: .8px;
-        }
-
-        .score-input {
-            width: 110px;
-            padding: 13px;
-            text-align: center;
-            font-size: 22px;
-            font-weight: 700;
-            color: white;
-            background: #071420;
-            border: 1px solid #34516b;
-            border-radius: 8px;
-            outline: none;
-        }
-
-        .score-input:focus,
-        select:focus,
-        textarea:focus {
-            border-color: #16bdeb;
-            box-shadow: 0 0 0 3px rgba(22, 189, 235, 0.10);
-        }
-
-        .versus {
-            text-align: center;
-            color: #71889c;
-            font-weight: 700;
-            font-size: 16px;
-        }
-
-        .field {
-            margin-bottom: 24px;
-        }
-
-        .field label {
-            display: block;
-            margin-bottom: 9px;
-            color: #c7d4df;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        select,
-        textarea {
-            width: 100%;
-            padding: 13px 14px;
-            background: #091725;
-            border: 1px solid #2b4359;
-            border-radius: 7px;
-            color: #ecf8ff;
-            font-size: 14px;
-            outline: none;
-        }
-
-        textarea {
-            min-height: 115px;
-            resize: vertical;
-        }
-
-        .notice {
-            padding: 14px 16px;
-            margin-bottom: 24px;
-            border-radius: 7px;
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .notice-info {
-            background: rgba(0, 173, 239, 0.08);
-            border: 1px solid rgba(0, 173, 239, 0.32);
-            color: #9adef5;
-        }
-
-        .notice-error {
-            background: rgba(239, 68, 68, 0.08);
-            border: 1px solid rgba(239, 68, 68, 0.35);
-            color: #ffaaaa;
-        }
-
-        .notice-rejected {
-            background: rgba(245, 158, 11, 0.09);
-            border: 1px solid rgba(245, 158, 11, 0.38);
-            color: #ffd28a;
-        }
-
-        .error-list {
-            margin: 7px 0 0;
-            padding-left: 20px;
-        }
-
-        .actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            padding-top: 8px;
-        }
-
-        .btn {
-            display: inline-block;
-            border: none;
-            border-radius: 7px;
-            padding: 12px 20px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 700;
-            text-decoration: none;
-        }
-
-        .btn-secondary {
-            color: #ccd8e2;
-            background: #18283a;
-            border: 1px solid #31485e;
-        }
-
-        .btn-primary {
-            color: #04131d;
-            background: #16bfe9;
-        }
-
-        .btn-primary:hover {
-            background: #40cef0;
-        }
-
-        @media (max-width: 720px) {
-            .topbar {
-                padding: 0 20px;
-            }
-
-            .teams {
-                grid-template-columns: 1fr;
-            }
-
-            .versus {
-                padding: 2px 0;
-            }
-
-            .actions {
-                flex-direction: column-reverse;
-            }
-
-            .btn {
-                text-align: center;
-                width: 100%;
-            }
-        }
-    </style>
-</head>
-
-<body>
-
-<header class="topbar">
-    <div class="brand">ArenaSync</div>
-    <div class="topbar-user">
-        Match Result Submission
+@section('content')
+<div class="mx-auto max-w-4xl">
+    <div class="mb-6">
+        <a
+            href="{{ route('matches.show', $match) }}"
+            class="text-sm font-medium text-cyan-400 hover:text-cyan-300"
+        >
+            â† Back to Match Details
+        </a>
     </div>
-</header>
 
-<main class="page">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-cyan-400">
+            Submit Match Result
+        </h1>
 
-    <a href="{{ route('matches.show', $match) }}" class="back-link">
-        ← Back to Match Details
-    </a>
-
-    <div class="heading">
-        <h1>Submit Match Result</h1>
-        <p>
-            Enter the final score and winning team. The organizer will verify
-            the result before it becomes official.
+        <p class="mt-2 text-slate-400">
+            {{ $match->tournament?->title ?? 'Tournament' }}
+            Â· {{ $match->round }}
         </p>
     </div>
 
     @if ($errors->any())
-        <div class="notice notice-error">
-            <strong>Please correct the following:</strong>
+        <div class="mb-6 rounded-lg border border-red-700 bg-red-950/50 p-4 text-red-200">
+            <p class="font-semibold">Please correct the following:</p>
 
-            <ul class="error-list">
+            <ul class="mt-2 list-inside list-disc space-y-1 text-sm">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -327,176 +37,163 @@
     @endif
 
     @if ($result && $result->isRejected())
-        <div class="notice notice-rejected">
-            <strong>Previous submission was rejected.</strong>
+        <div class="mb-6 rounded-lg border border-red-800 bg-red-950/40 p-4 text-red-200">
+            <p class="font-semibold">
+                Previous submission was rejected.
+            </p>
 
             @if ($result->review_notes)
-                <br>
-                Organizer note: {{ $result->review_notes }}
+                <p class="mt-2 text-sm">
+                    Organizer note: {{ $result->review_notes }}
+                </p>
             @endif
 
-            <br>
-            Please correct the result and submit it again.
+            <p class="mt-2 text-sm">
+                Correct the result and submit it again.
+            </p>
         </div>
     @elseif ($result && $result->isPending())
-        <div class="notice notice-info">
-            A result has already been submitted for this match and is currently
-            waiting for organizer verification. You may update it before it is
-            verified.
+        <div class="mb-6 rounded-lg border border-amber-800 bg-amber-950/40 p-4 text-amber-200">
+            A result is already pending organizer verification. You can update it
+            until it is verified.
         </div>
     @endif
 
-    <section class="match-card">
+    <form
+        method="POST"
+        action="{{ route('match-results.store', $match) }}"
+        class="rounded-xl border border-slate-800 bg-slate-900 p-6"
+    >
+        @csrf
 
-        <div class="match-header">
-            <div>
-                <h2>{{ $match->teamOne?->name ?? 'Team One' }} vs {{ $match->teamTwo?->name ?? 'Team Two' }}</h2>
-
-                <p>
-                    {{ $match->tournament?->name ?? 'Tournament' }}
-                    · Round {{ $match->round }}
+        <div class="grid items-center gap-5 md:grid-cols-[1fr_auto_1fr]">
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-6 text-center">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Team One
                 </p>
+
+                <h2 class="mt-2 text-xl font-bold text-white">
+                    {{ $match->teamOne?->name ?? 'Team One' }}
+                </h2>
+
+                <input
+                    type="number"
+                    name="team_one_score"
+                    min="0"
+                    required
+                    value="{{ old('team_one_score', $result?->team_one_score ?? 0) }}"
+                    class="mx-auto mt-5 w-28 rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-center text-2xl font-bold text-white outline-none focus:border-cyan-500"
+                >
             </div>
 
-            <span class="status">
-                RESULT SUBMISSION
-            </span>
+            <div class="text-center font-bold text-slate-500">
+                VS
+            </div>
+
+            <div class="rounded-xl border border-slate-800 bg-slate-950 p-6 text-center">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Team Two
+                </p>
+
+                <h2 class="mt-2 text-xl font-bold text-white">
+                    {{ $match->teamTwo?->name ?? 'Team Two' }}
+                </h2>
+
+                <input
+                    type="number"
+                    name="team_two_score"
+                    min="0"
+                    required
+                    value="{{ old('team_two_score', $result?->team_two_score ?? 0) }}"
+                    class="mx-auto mt-5 w-28 rounded-lg border border-slate-700 bg-slate-900 px-4 py-3 text-center text-2xl font-bold text-white outline-none focus:border-cyan-500"
+                >
+            </div>
         </div>
 
-        <form
-            method="POST"
-            action="{{ route('match-results.store', $match) }}"
-            class="form-area"
-        >
-            @csrf
+        <div class="mt-6">
+            <label
+                for="winner_team_id"
+                class="mb-2 block text-sm font-medium text-slate-200"
+            >
+                Winning Team
+            </label>
 
-            <div class="teams">
+            <select
+                name="winner_team_id"
+                id="winner_team_id"
+                class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-cyan-500"
+            >
+                <option value="">
+                    Select winner â€” leave empty for a draw
+                </option>
 
-                <div class="team">
-                    <div class="team-label">Team One</div>
-
-                    <div class="team-name">
-                        {{ $match->teamOne?->name ?? 'Team One' }}
-                    </div>
-
-                    <input
-                        type="number"
-                        name="team_one_score"
-                        class="score-input"
-                        min="0"
-                        required
-                        value="{{ old('team_one_score', $result?->team_one_score ?? 0) }}"
+                @if ($match->teamOne)
+                    <option
+                        value="{{ $match->teamOne->id }}"
+                        @selected(
+                            old(
+                                'winner_team_id',
+                                $result?->winner_team_id
+                            ) == $match->teamOne->id
+                        )
                     >
-                </div>
-
-                <div class="versus">
-                    VS
-                </div>
-
-                <div class="team">
-                    <div class="team-label">Team Two</div>
-
-                    <div class="team-name">
-                        {{ $match->teamTwo?->name ?? 'Team Two' }}
-                    </div>
-
-                    <input
-                        type="number"
-                        name="team_two_score"
-                        class="score-input"
-                        min="0"
-                        required
-                        value="{{ old('team_two_score', $result?->team_two_score ?? 0) }}"
-                    >
-                </div>
-
-            </div>
-
-            <div class="field">
-                <label for="winner_team_id">
-                    Winning Team
-                </label>
-
-                <select
-                    name="winner_team_id"
-                    id="winner_team_id"
-                >
-                    <option value="">
-                        Select winner — leave empty for a draw
+                        {{ $match->teamOne->name }}
                     </option>
+                @endif
 
-                    @if ($match->teamOne)
-                        <option
-                            value="{{ $match->teamOne->id }}"
-                            @selected(
-                                old(
-                                    'winner_team_id',
-                                    $result?->winner_team_id
-                                ) == $match->teamOne->id
-                            )
-                        >
-                            {{ $match->teamOne->name }}
-                        </option>
-                    @endif
+                @if ($match->teamTwo)
+                    <option
+                        value="{{ $match->teamTwo->id }}"
+                        @selected(
+                            old(
+                                'winner_team_id',
+                                $result?->winner_team_id
+                            ) == $match->teamTwo->id
+                        )
+                    >
+                        {{ $match->teamTwo->name }}
+                    </option>
+                @endif
+            </select>
+        </div>
 
-                    @if ($match->teamTwo)
-                        <option
-                            value="{{ $match->teamTwo->id }}"
-                            @selected(
-                                old(
-                                    'winner_team_id',
-                                    $result?->winner_team_id
-                                ) == $match->teamTwo->id
-                            )
-                        >
-                            {{ $match->teamTwo->name }}
-                        </option>
-                    @endif
-                </select>
-            </div>
+        <div class="mt-6">
+            <label
+                for="remarks"
+                class="mb-2 block text-sm font-medium text-slate-200"
+            >
+                Remarks
+            </label>
 
-            <div class="field">
-                <label for="remarks">
-                    Remarks
-                </label>
+            <textarea
+                name="remarks"
+                id="remarks"
+                rows="5"
+                maxlength="2000"
+                placeholder="Optional notes about the match result..."
+                class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-cyan-500"
+            >{{ old('remarks', $result?->remarks) }}</textarea>
+        </div>
 
-                <textarea
-                    name="remarks"
-                    id="remarks"
-                    maxlength="2000"
-                    placeholder="Optional notes about the match result..."
-                >{{ old('remarks', $result?->remarks) }}</textarea>
-            </div>
+        <div class="mt-6 rounded-lg border border-cyan-900 bg-cyan-950/30 p-4 text-sm text-cyan-200">
+            The result remains pending until the tournament organizer verifies it.
+        </div>
 
-            <div class="notice notice-info">
-                Once submitted, this result will remain
-                <strong>Pending</strong> until it is reviewed by the tournament
-                organizer.
-            </div>
+        <div class="mt-6 flex flex-wrap justify-end gap-3">
+            <a
+                href="{{ route('matches.show', $match) }}"
+                class="rounded-lg bg-slate-700 px-5 py-2.5 font-semibold text-white hover:bg-slate-600"
+            >
+                Cancel
+            </a>
 
-            <div class="actions">
-
-                <a
-                    href="{{ route('matches.show', $match) }}"
-                    class="btn btn-secondary"
-                >
-                    Cancel
-                </a>
-
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                >
-                    {{ $result ? 'Update Result' : 'Submit for Verification' }}
-                </button>
-
-            </div>
-
-        </form>
-
-    </section>
-
-</main>
-
-</body>
-</html>
+            <button
+                type="submit"
+                class="rounded-lg bg-cyan-600 px-5 py-2.5 font-semibold text-white hover:bg-cyan-500"
+            >
+                {{ $result ? 'Update Result' : 'Submit for Verification' }}
+            </button>
+        </div>
+    </form>
+</div>
+@endsection

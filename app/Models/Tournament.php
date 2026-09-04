@@ -11,27 +11,32 @@ class Tournament extends Model
 {
     use HasFactory;
 
+    public const STATUS_DRAFT =
+        'DRAFT';
 
-    public const STATUS_DRAFT = 'DRAFT';
+    public const STATUS_REGISTRATION_OPEN =
+        'REGISTRATION_OPEN';
 
-    public const STATUS_REGISTRATION_OPEN = 'REGISTRATION_OPEN';
+    public const STATUS_REGISTRATION_CLOSED =
+        'REGISTRATION_CLOSED';
 
-    public const STATUS_REGISTRATION_CLOSED = 'REGISTRATION_CLOSED';
+    public const STATUS_ONGOING =
+        'ONGOING';
 
-    public const STATUS_ONGOING = 'ONGOING';
+    public const STATUS_COMPLETED =
+        'COMPLETED';
 
-    public const STATUS_COMPLETED = 'COMPLETED';
+    public const STATUS_CANCELLED =
+        'CANCELLED';
 
-    public const STATUS_CANCELLED = 'CANCELLED';
+    public const PHASE_UPCOMING =
+        'UPCOMING';
 
+    public const PHASE_ONGOING =
+        'ONGOING';
 
-    public const PHASE_UPCOMING = 'UPCOMING';
-
-    public const PHASE_ONGOING = 'ONGOING';
-
-    public const PHASE_COMPLETED = 'COMPLETED';
-
-
+    public const PHASE_COMPLETED =
+        'COMPLETED';
 
     protected $fillable = [
         'organizer_id',
@@ -50,28 +55,34 @@ class Tournament extends Model
         'match_format',
         'status',
         'is_paid',
+        'entry_fee',
     ];
-
-
 
     protected function casts(): array
     {
         return [
-            'registration_deadline' => 'datetime',
+            'registration_deadline'
+                => 'datetime',
 
-            'start_at' => 'datetime',
+            'start_at'
+                => 'datetime',
 
-            'end_at' => 'datetime',
+            'end_at'
+                => 'datetime',
 
-            'prize_pool' => 'decimal:2',
+            'prize_pool'
+                => 'decimal:2',
 
-            'team_limit' => 'integer',
+            'entry_fee'
+                => 'decimal:2',
 
-            'is_paid' => 'boolean',
+            'team_limit'
+                => 'integer',
+
+            'is_paid'
+                => 'boolean',
         ];
     }
-
-
 
     public static function statuses(): array
     {
@@ -90,48 +101,39 @@ class Tournament extends Model
         ];
     }
 
-
-
     public function allowedStatusTransitions(): array
     {
         return match ($this->status) {
-
             self::STATUS_DRAFT => [
                 self::STATUS_REGISTRATION_OPEN,
                 self::STATUS_CANCELLED,
             ],
-
 
             self::STATUS_REGISTRATION_OPEN => [
                 self::STATUS_REGISTRATION_CLOSED,
                 self::STATUS_CANCELLED,
             ],
 
-
             self::STATUS_REGISTRATION_CLOSED => [
                 self::STATUS_ONGOING,
                 self::STATUS_CANCELLED,
             ],
-
 
             self::STATUS_ONGOING => [
                 self::STATUS_COMPLETED,
                 self::STATUS_CANCELLED,
             ],
 
-
             self::STATUS_COMPLETED,
             self::STATUS_CANCELLED => [],
-
 
             default => [],
         };
     }
 
-
-
-    public function canTransitionTo(string $status): bool
-    {
+    public function canTransitionTo(
+        string $status
+    ): bool {
         return in_array(
             $status,
             $this->allowedStatusTransitions(),
@@ -139,41 +141,50 @@ class Tournament extends Model
         );
     }
 
-
-
-    public function transitionTo(string $status): bool
-    {
-        if (! $this->canTransitionTo($status)) {
+    public function transitionTo(
+        string $status
+    ): bool {
+        if (
+            ! $this->canTransitionTo(
+                $status
+            )
+        ) {
             return false;
         }
-
 
         return $this->update([
             'status' => $status,
         ]);
     }
 
-
-
     public function timelinePhase(): string
     {
         $now = now();
 
-
-        if ($now->lt($this->start_at)) {
+        if (
+            $now->lt(
+                $this->start_at
+            )
+        ) {
             return self::PHASE_UPCOMING;
         }
 
-
-        if ($now->lte($this->end_at)) {
+        if (
+            $now->lte(
+                $this->end_at
+            )
+        ) {
             return self::PHASE_ONGOING;
         }
-
 
         return self::PHASE_COMPLETED;
     }
 
-
+    public function requiresPayment(): bool
+    {
+        return $this->is_paid
+            && (float) $this->entry_fee > 0;
+    }
 
     public function organizer(): BelongsTo
     {
@@ -183,16 +194,12 @@ class Tournament extends Model
         );
     }
 
-
-
     public function game(): BelongsTo
     {
         return $this->belongsTo(
             Game::class
         );
     }
-
-
 
     public function registrations(): HasMany
     {
@@ -201,25 +208,12 @@ class Tournament extends Model
         );
     }
 
-
-
     public function matches(): HasMany
     {
         return $this->hasMany(
             GameMatch::class
         );
     }
-
-
-
-    public function payments(): HasMany
-    {
-        return $this->hasMany(
-            Payment::class
-        );
-    }
-
-
 
     public function livestreams(): HasMany
     {

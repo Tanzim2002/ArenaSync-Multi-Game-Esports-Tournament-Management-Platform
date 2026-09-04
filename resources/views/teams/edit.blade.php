@@ -1,113 +1,197 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit {{ $team->name }}</title>
-</head>
+@extends('layouts.app')
 
-<body>
+@section('title', 'Edit ' . $team->name . ' | ArenaSync')
 
-    <h1>Edit Team</h1>
+@section('content')
+<div class="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-6">
+        <a
+            href="{{ route('teams.show', $team) }}"
+            class="text-sm font-medium text-cyan-400 transition hover:text-cyan-300"
+        >
+            ← Back to Team Profile
+        </a>
+    </div>
 
-    @if (session('success'))
-        <p style="color: green;">
-            {{ session('success') }}
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-cyan-400">
+            Edit Team
+        </h1>
+
+        <p class="mt-2 text-slate-400">
+            Update {{ $team->name }}.
         </p>
-    @endif
+    </div>
 
     @if ($errors->any())
-        <div style="color: red;">
-            <strong>Please fix the following problems:</strong>
+        <div class="mb-6 rounded-lg border border-red-700 bg-red-950/50 p-4 text-red-200">
+            <p class="font-semibold">
+                Please fix the following problems:
+            </p>
 
-            <ul>
+            <ul class="mt-2 list-inside list-disc space-y-1 text-sm">
                 @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+                    <li>
+                        {{ $error }}
+                    </li>
                 @endforeach
             </ul>
         </div>
     @endif
 
-    <form
-        action="{{ route('teams.update', $team) }}"
-        method="POST"
-        enctype="multipart/form-data"
-    >
-        @csrf
-        @method('PUT')
-
-        <label for="name">Team Name</label>
-        <br>
-
-        <input
-            type="text"
-            id="name"
-            name="name"
-            value="{{ old('name', $team->name) }}"
-            required
+    <div class="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-xl">
+        <form
+            action="{{ route('teams.update', $team) }}"
+            method="POST"
+            enctype="multipart/form-data"
+            class="space-y-6"
         >
+            @csrf
+            @method('PUT')
 
-        <br><br>
+            <div>
+                <label
+                    for="name"
+                    class="mb-2 block text-sm font-medium text-slate-200"
+                >
+                    Team Name
+                </label>
 
-        @if ($team->logo)
-            <p>Current Logo:</p>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value="{{ old('name', $team->name) }}"
+                    required
+                    class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-cyan-500"
+                >
 
-            <img
-                src="{{ asset('storage/' . $team->logo) }}"
-                alt="{{ $team->name }} logo"
-                width="120"
-            >
+                @error('name')
+                    <p class="mt-2 text-sm text-red-400">
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
 
-            <br><br>
-        @endif
+            <div>
+                <label
+                    for="preferred_game_id"
+                    class="mb-2 block text-sm font-medium text-slate-200"
+                >
+                    Preferred Game
+                </label>
 
-        <label for="logo">New Logo</label>
-        <br>
+                <select
+                    id="preferred_game_id"
+                    name="preferred_game_id"
+                    class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-cyan-500"
+                >
+                    <option value="">
+                        Select a game
+                    </option>
 
-        <input
-            type="file"
-            id="logo"
-            name="logo"
-            accept=".jpg,.jpeg,.png,.webp"
-        >
+                    @foreach ($games as $game)
+                        <option
+                            value="{{ $game->id }}"
+                            @selected(
+                                (string) old(
+                                    'preferred_game_id',
+                                    $team->preferred_game_id
+                                )
+                                ===
+                                (string) $game->id
+                            )
+                        >
+                            {{ $game->name }}
+                            @if ($game->platform)
+                                — {{ $game->platform }}
+                            @endif
+                        </option>
+                    @endforeach
+                </select>
 
-        <br><br>
+                @error('preferred_game_id')
+                    <p class="mt-2 text-sm text-red-400">
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
 
-        <label for="preferred_game_id">Preferred Game ID</label>
-        <br>
+            @if ($team->logo)
+                <div>
+                    <p class="mb-2 text-sm font-medium text-slate-200">
+                        Current Logo
+                    </p>
 
-        <input
-            type="number"
-            id="preferred_game_id"
-            name="preferred_game_id"
-            value="{{ old('preferred_game_id', $team->preferred_game_id) }}"
-            min="1"
-        >
+                    <img
+                        src="{{ asset('storage/' . $team->logo) }}"
+                        alt="{{ $team->name }} logo"
+                        class="h-28 w-28 rounded-xl border border-slate-700 object-cover"
+                    >
+                </div>
+            @endif
 
-        <br><br>
+            <div>
+                <label
+                    for="logo"
+                    class="mb-2 block text-sm font-medium text-slate-200"
+                >
+                    {{ $team->logo ? 'Replace Logo' : 'Team Logo' }}
+                </label>
 
-        <label for="description">Description</label>
-        <br>
+                <input
+                    type="file"
+                    id="logo"
+                    name="logo"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    class="block w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-300 file:mr-4 file:rounded file:border-0 file:bg-cyan-600 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-cyan-500"
+                >
 
-        <textarea
-            id="description"
-            name="description"
-            rows="5"
-            cols="40"
-        >{{ old('description', $team->description) }}</textarea>
+                @error('logo')
+                    <p class="mt-2 text-sm text-red-400">
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
 
-        <br><br>
+            <div>
+                <label
+                    for="description"
+                    class="mb-2 block text-sm font-medium text-slate-200"
+                >
+                    Description
+                </label>
 
-        <button type="submit">
-            Update Team
-        </button>
-    </form>
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="5"
+                    class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-cyan-500"
+                >{{ old('description', $team->description) }}</textarea>
 
-    <br>
+                @error('description')
+                    <p class="mt-2 text-sm text-red-400">
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
 
-    <a href="{{ route('teams.show', $team) }}">
-        Back to Team Profile
-    </a>
+            <div class="flex flex-wrap gap-3">
+                <button
+                    type="submit"
+                    class="rounded-lg bg-cyan-600 px-6 py-3 font-semibold text-white transition hover:bg-cyan-500"
+                >
+                    Update Team
+                </button>
 
-</body>
-</html>
+                <a
+                    href="{{ route('teams.show', $team) }}"
+                    class="rounded-lg bg-slate-700 px-6 py-3 font-semibold text-white transition hover:bg-slate-600"
+                >
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection

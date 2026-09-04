@@ -1,398 +1,508 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $team->name }} - Team Profile</title>
-</head>
+@extends('layouts.app')
 
-<body>
+@section('title', $team->name . ' | ArenaSync')
 
-    <h1>{{ $team->name }}</h1>
+@section('content')
+@php
+    $isLeader =
+        (int) $team->leader_id
+        ===
+        (int) auth()->id();
+
+    $currentMember =
+        $team->teamMembers
+            ->firstWhere(
+                'user_id',
+                auth()->id()
+            );
+
+    $isMember =
+        $currentMember !== null;
+
+    $myPendingRequest =
+        $pendingRequests
+            ->firstWhere(
+                'user_id',
+                auth()->id()
+            );
+@endphp
+
+<div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mb-6">
+        <a
+            href="{{ route('tournaments.index') }}"
+            class="text-sm font-medium text-cyan-400 transition hover:text-cyan-300"
+        >
+            ← Back to Tournaments
+        </a>
+    </div>
 
     @if (session('success'))
-        <p style="color: green;">
+        <div class="mb-6 rounded-lg border border-emerald-700 bg-emerald-950/50 p-4 text-emerald-200">
             {{ session('success') }}
-        </p>
+        </div>
     @endif
 
     @if ($errors->any())
-        <div style="color: red;">
-            <ul>
+        <div class="mb-6 rounded-lg border border-red-700 bg-red-950/50 p-4 text-red-200">
+            <ul class="list-inside list-disc space-y-1 text-sm">
                 @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+                    <li>
+                        {{ $error }}
+                    </li>
                 @endforeach
             </ul>
         </div>
     @endif
 
-
-    @if ($team->logo)
-        <div>
-            <img
-                src="{{ asset('storage/' . $team->logo) }}"
-                alt="{{ $team->name }} logo"
-                width="150"
-            >
-        </div>
-
-        <br>
-    @endif
-
-
-    <p>
-        <strong>Team Leader:</strong>
-        {{ $team->leader->name }}
-    </p>
-
-    <p>
-        <strong>Preferred Game ID:</strong>
-        {{ $team->preferred_game_id ?? 'Not selected' }}
-    </p>
-
-    <p>
-        <strong>Description:</strong>
-        {{ $team->description ?? 'No description added.' }}
-    </p>
-
-    <p>
-        <strong>Created:</strong>
-        {{ $team->created_at->format('d M Y') }}
-    </p>
-
-<p>
-    <a href="{{ route('performance.teams.show', $team) }}">
-        View Team Performance History
-    </a>
-</p>
-    <hr>
-
-
-    <h2>Team Members</h2>
-
-    @if ($team->teamMembers->isEmpty())
-
-        <p>No players have joined this team yet.</p>
-
-    @else
-
-        <ul>
-            @foreach ($team->teamMembers as $member)
-
-                <li style="margin-bottom: 15px;">
-
-                    {{ $member->user->name }}
-                    ({{ $member->user->email }})
-
-                    <br>
-
-                    <strong>Role:</strong>
-                    {{ $member->role }}
-                      <br>
-
-<a href="{{ route('performance.players.show', $member->user) }}">
-    View Player Performance History
-</a>
-                    @if ($team->leader_id === auth()->id())
-
-                        <form
-                            method="POST"
-                            action="{{ route('teams.members.role.update', [$team, $member]) }}"
-                            style="margin-top: 5px;"
-                        >
-                            @csrf
-                            @method('PATCH')
-
-                            <select name="role" required>
-
-                                <option
-                                    value="CAPTAIN"
-                                    {{ $member->role === 'CAPTAIN' ? 'selected' : '' }}
-                                >
-                                    Captain
-                                </option>
-
-                                <option
-                                    value="MEMBER"
-                                    {{ $member->role === 'MEMBER' ? 'selected' : '' }}
-                                >
-                                    Member
-                                </option>
-
-                                <option
-                                    value="SUBSTITUTE"
-                                    {{ $member->role === 'SUBSTITUTE' ? 'selected' : '' }}
-                                >
-                                    Substitute
-                                </option>
-
-                            </select>
-
-                            <button type="submit">
-                                Update Role
-                            </button>
-
-                        </form>
-
-                    @endif
-
-                </li>
-
-            @endforeach
-        </ul>
-
-    @endif
-
-
-    <hr>
-
-
-    @if ($team->leader_id === auth()->id())
-
-
-        <h2>Invite Player</h2>
-
-        <form
-            method="POST"
-            action="{{ route('teams.invitations.store', $team) }}"
-        >
-            @csrf
-
-            <label for="email">Player Email:</label>
-
-            <input
-                type="email"
-                id="email"
-                name="email"
-                value="{{ old('email') }}"
-                required
-            >
-
-            <button type="submit">
-                Send Invitation
-            </button>
-        </form>
-
-
-        <h2>Pending Membership Requests</h2>
-
-        @if ($pendingRequests->isEmpty())
-
-            <p>No pending requests.</p>
-
-        @else
-
-            @foreach ($pendingRequests as $membershipRequest)
-
-                <div style="margin-bottom: 20px;">
-
-                    <p>
-                        <strong>Player:</strong>
-                        {{ $membershipRequest->user->name }}
-                        ({{ $membershipRequest->user->email }})
-                    </p>
-
-                    <p>
-                        <strong>Type:</strong>
-                        {{ $membershipRequest->request_type }}
-                    </p>
-
-
-                    @if ($membershipRequest->request_type === 'JOIN_REQUEST')
-
-                        <form
-                            method="POST"
-                            action="{{ route('team-membership-requests.accept', $membershipRequest) }}"
-                            style="display: inline;"
-                        >
-                            @csrf
-                            @method('PATCH')
-
-                            <button type="submit">
-                                Accept
-                            </button>
-                        </form>
-
-
-                        <form
-                            method="POST"
-                            action="{{ route('team-membership-requests.reject', $membershipRequest) }}"
-                            style="display: inline;"
-                        >
-                            @csrf
-                            @method('PATCH')
-
-                            <button type="submit">
-                                Reject
-                            </button>
-                        </form>
-
-                    @else
-
-                        <p>Invitation waiting for player response.</p>
-
-                        <form
-                            method="POST"
-                            action="{{ route('team-membership-requests.cancel', $membershipRequest) }}"
-                        >
-                            @csrf
-                            @method('PATCH')
-
-                            <button type="submit">
-                                Cancel Invitation
-                            </button>
-                        </form>
-
-                    @endif
-
-                </div>
-
-            @endforeach
-
-        @endif
-
-
-    @else
-
-
-        @php
-            $currentMember = $team->teamMembers
-                ->firstWhere('user_id', auth()->id());
-
-            $isMember = $currentMember !== null;
-
-            $myPendingRequest = $pendingRequests
-                ->firstWhere('user_id', auth()->id());
-        @endphp
-
-
-        @if ($isMember)
-
-            <h2>Membership</h2>
-
-            <p>
-                You are a member of this team.
-            </p>
-
-            <p>
-                <strong>Your Role:</strong>
-                {{ $currentMember->role }}
-            </p>
-
-            <form
-                method="POST"
-                action="{{ route('teams.leave', $team) }}"
-                onsubmit="return confirm('Are you sure you want to leave this team?');"
-            >
-                @csrf
-                @method('DELETE')
-
-                <button type="submit">
-                    Leave Team
-                </button>
-            </form>
-
-
-        @elseif ($myPendingRequest)
-
-
-            @if ($myPendingRequest->request_type === 'INVITATION')
-
-                <h2>Team Invitation</h2>
-
-                <p>
-                    You have been invited to join this team.
-                </p>
-
-                <form
-                    method="POST"
-                    action="{{ route('team-membership-requests.accept', $myPendingRequest) }}"
-                    style="display: inline;"
+    <article class="rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-xl sm:p-8">
+        <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
+            @if ($team->logo)
+                <img
+                    src="{{ asset('storage/' . $team->logo) }}"
+                    alt="{{ $team->name }} logo"
+                    class="h-32 w-32 rounded-xl border border-slate-700 object-cover"
                 >
-                    @csrf
-                    @method('PATCH')
-
-                    <button type="submit">
-                        Accept Invitation
-                    </button>
-                </form>
-
-
-                <form
-                    method="POST"
-                    action="{{ route('team-membership-requests.reject', $myPendingRequest) }}"
-                    style="display: inline;"
-                >
-                    @csrf
-                    @method('PATCH')
-
-                    <button type="submit">
-                        Reject Invitation
-                    </button>
-                </form>
-
-
             @else
-
-                <h2>Join Request</h2>
-
-                <p>
-                    Your request to join this team is pending.
-                </p>
-
-                <form
-                    method="POST"
-                    action="{{ route('team-membership-requests.cancel', $myPendingRequest) }}"
-                >
-                    @csrf
-                    @method('PATCH')
-
-                    <button type="submit">
-                        Cancel Join Request
-                    </button>
-                </form>
-
+                <div class="flex h-32 w-32 items-center justify-center rounded-xl border border-slate-700 bg-slate-950 text-4xl font-bold text-cyan-400">
+                    {{ strtoupper(substr($team->name, 0, 1)) }}
+                </div>
             @endif
 
+            <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-3xl font-bold text-cyan-400">
+                            {{ $team->name }}
+                        </h1>
 
+                        <p class="mt-2 text-slate-400">
+                            Led by
+                            <span class="font-semibold text-slate-200">
+                                {{ $team->leader->name }}
+                            </span>
+                        </p>
+                    </div>
+
+                    @if ($isLeader)
+                        <a
+                            href="{{ route('teams.edit', $team) }}"
+                            class="rounded-lg bg-amber-600 px-4 py-2 font-semibold text-white transition hover:bg-amber-500"
+                        >
+                            Edit Team
+                        </a>
+                    @endif
+                </div>
+
+                <div class="mt-6 grid gap-4 sm:grid-cols-3">
+                    <div class="rounded-lg bg-slate-950 p-4">
+                        <p class="text-sm text-slate-500">
+                            Preferred Game
+                        </p>
+
+                        <p class="mt-1 font-semibold text-slate-200">
+                            {{ $team->preferredGame?->name ?? 'Not selected' }}
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg bg-slate-950 p-4">
+                        <p class="text-sm text-slate-500">
+                            Members
+                        </p>
+
+                        <p class="mt-1 font-semibold text-slate-200">
+                            {{ $team->teamMembers->count() }}
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg bg-slate-950 p-4">
+                        <p class="text-sm text-slate-500">
+                            Created
+                        </p>
+
+                        <p class="mt-1 font-semibold text-slate-200">
+                            {{ $team->created_at->format('M d, Y') }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <p class="text-sm text-slate-500">
+                        Description
+                    </p>
+
+                    <p class="mt-2 leading-7 text-slate-300">
+                        {{ $team->description ?? 'No description added.' }}
+                    </p>
+                </div>
+
+                <div class="mt-5">
+                    <a
+                        href="{{ route('performance.teams.show', $team) }}"
+                        class="inline-flex rounded-lg bg-violet-600 px-4 py-2 font-semibold text-white transition hover:bg-violet-500"
+                    >
+                        View Team Performance
+                    </a>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <section class="mt-8 rounded-xl border border-slate-800 bg-slate-900 p-6">
+        <h2 class="text-2xl font-semibold text-white">
+            Team Members
+        </h2>
+
+        @if ($team->teamMembers->isEmpty())
+            <div class="mt-5 rounded-lg bg-slate-950 p-5 text-slate-400">
+                No players have joined this team yet.
+            </div>
         @else
+            <div class="mt-5 space-y-4">
+                @foreach ($team->teamMembers as $member)
+                    <div class="rounded-lg border border-slate-800 bg-slate-950 p-5">
+                        <div class="flex flex-col justify-between gap-4 lg:flex-row">
+                            <div>
+                                <p class="font-semibold text-white">
+                                    {{ $member->user->name }}
+                                </p>
 
-            <h2>Join Team</h2>
+                                <p class="text-sm text-slate-400">
+                                    {{ $member->user->email }}
+                                </p>
 
-            <form
-                method="POST"
-                action="{{ route('teams.join-requests.store', $team) }}"
-            >
-                @csrf
+                                <span class="mt-2 inline-flex rounded-full bg-cyan-950 px-3 py-1 text-xs font-semibold text-cyan-300">
+                                    {{ $member->role }}
+                                </span>
 
-                <button type="submit">
-                    Request to Join
-                </button>
-            </form>
+                                <div class="mt-3">
+                                    <a
+                                        href="{{ route('performance.players.show', $member->user) }}"
+                                        class="text-sm font-medium text-violet-400 hover:text-violet-300"
+                                    >
+                                        View Player Performance
+                                    </a>
+                                </div>
+                            </div>
 
+                            @if ($isLeader)
+                                <form
+                                    method="POST"
+                                    action="{{ route('teams.members.role.update', [$team, $member]) }}"
+                                    class="flex flex-wrap items-end gap-3"
+                                >
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <div>
+                                        <label
+                                            for="role-{{ $member->id }}"
+                                            class="mb-2 block text-xs font-medium text-slate-400"
+                                        >
+                                            Team Role
+                                        </label>
+
+                                        <select
+                                            id="role-{{ $member->id }}"
+                                            name="role"
+                                            required
+                                            class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-white"
+                                        >
+                                            <option
+                                                value="CAPTAIN"
+                                                @selected($member->role === 'CAPTAIN')
+                                            >
+                                                Captain
+                                            </option>
+
+                                            <option
+                                                value="MEMBER"
+                                                @selected($member->role === 'MEMBER')
+                                            >
+                                                Member
+                                            </option>
+
+                                            <option
+                                                value="SUBSTITUTE"
+                                                @selected($member->role === 'SUBSTITUTE')
+                                            >
+                                                Substitute
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        class="rounded-lg bg-cyan-600 px-4 py-2 font-semibold text-white transition hover:bg-cyan-500"
+                                    >
+                                        Update Role
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
+            </div>
         @endif
+    </section>
 
+    @if ($isLeader)
+        <section class="mt-8 grid gap-6 lg:grid-cols-2">
+            <div class="rounded-xl border border-slate-800 bg-slate-900 p-6">
+                <h2 class="text-xl font-semibold text-white">
+                    Invite Player
+                </h2>
 
+                <p class="mt-2 text-sm text-slate-400">
+                    Send an invitation using the player's account email.
+                </p>
+
+                <form
+                    method="POST"
+                    action="{{ route('teams.invitations.store', $team) }}"
+                    class="mt-5 space-y-4"
+                >
+                    @csrf
+
+                    <div>
+                        <label
+                            for="email"
+                            class="mb-2 block text-sm font-medium text-slate-200"
+                        >
+                            Player Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            required
+                            class="w-full rounded-lg border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-cyan-500"
+                        >
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="rounded-lg bg-cyan-600 px-5 py-2.5 font-semibold text-white transition hover:bg-cyan-500"
+                    >
+                        Send Invitation
+                    </button>
+                </form>
+            </div>
+
+            <div class="rounded-xl border border-slate-800 bg-slate-900 p-6">
+                <h2 class="text-xl font-semibold text-white">
+                    Pending Membership Requests
+                </h2>
+
+                @if ($pendingRequests->isEmpty())
+                    <p class="mt-5 text-slate-400">
+                        No pending requests.
+                    </p>
+                @else
+                    <div class="mt-5 space-y-4">
+                        @foreach ($pendingRequests as $membershipRequest)
+                            <div class="rounded-lg bg-slate-950 p-4">
+                                <p class="font-semibold text-white">
+                                    {{ $membershipRequest->user->name }}
+                                </p>
+
+                                <p class="text-sm text-slate-400">
+                                    {{ $membershipRequest->user->email }}
+                                </p>
+
+                                <p class="mt-2 text-xs font-semibold text-cyan-300">
+                                    {{ str_replace('_', ' ', $membershipRequest->request_type) }}
+                                </p>
+
+                                <div class="mt-4 flex flex-wrap gap-2">
+                                    @if ($membershipRequest->request_type === 'JOIN_REQUEST')
+                                        <form
+                                            method="POST"
+                                            action="{{ route('team-membership-requests.accept', $membershipRequest) }}"
+                                        >
+                                            @csrf
+                                            @method('PATCH')
+
+                                            <button
+                                                type="submit"
+                                                class="rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-500"
+                                            >
+                                                Accept
+                                            </button>
+                                        </form>
+
+                                        <form
+                                            method="POST"
+                                            action="{{ route('team-membership-requests.reject', $membershipRequest) }}"
+                                        >
+                                            @csrf
+                                            @method('PATCH')
+
+                                            <button
+                                                type="submit"
+                                                class="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-500"
+                                            >
+                                                Reject
+                                            </button>
+                                        </form>
+                                    @else
+                                        <form
+                                            method="POST"
+                                            action="{{ route('team-membership-requests.cancel', $membershipRequest) }}"
+                                        >
+                                            @csrf
+                                            @method('PATCH')
+
+                                            <button
+                                                type="submit"
+                                                class="rounded-lg bg-slate-700 px-4 py-2 font-semibold text-white hover:bg-slate-600"
+                                            >
+                                                Cancel Invitation
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        </section>
+    @else
+        <section class="mt-8 rounded-xl border border-slate-800 bg-slate-900 p-6">
+            @if ($isMember)
+                <h2 class="text-xl font-semibold text-white">
+                    Your Membership
+                </h2>
+
+                <p class="mt-2 text-slate-400">
+                    You are currently a member of this team.
+                </p>
+
+                <p class="mt-3 font-semibold text-cyan-300">
+                    Role: {{ $currentMember->role }}
+                </p>
+
+                <form
+                    method="POST"
+                    action="{{ route('teams.leave', $team) }}"
+                    class="mt-5"
+                    onsubmit="return confirm('Are you sure you want to leave this team?');"
+                >
+                    @csrf
+                    @method('DELETE')
+
+                    <button
+                        type="submit"
+                        class="rounded-lg bg-red-600 px-5 py-2.5 font-semibold text-white hover:bg-red-500"
+                    >
+                        Leave Team
+                    </button>
+                </form>
+
+            @elseif ($myPendingRequest)
+                @if ($myPendingRequest->request_type === 'INVITATION')
+                    <h2 class="text-xl font-semibold text-white">
+                        Team Invitation
+                    </h2>
+
+                    <p class="mt-2 text-slate-400">
+                        You have been invited to join this team.
+                    </p>
+
+                    <div class="mt-5 flex flex-wrap gap-3">
+                        <form
+                            method="POST"
+                            action="{{ route('team-membership-requests.accept', $myPendingRequest) }}"
+                        >
+                            @csrf
+                            @method('PATCH')
+
+                            <button
+                                type="submit"
+                                class="rounded-lg bg-emerald-600 px-5 py-2.5 font-semibold text-white hover:bg-emerald-500"
+                            >
+                                Accept Invitation
+                            </button>
+                        </form>
+
+                        <form
+                            method="POST"
+                            action="{{ route('team-membership-requests.reject', $myPendingRequest) }}"
+                        >
+                            @csrf
+                            @method('PATCH')
+
+                            <button
+                                type="submit"
+                                class="rounded-lg bg-red-600 px-5 py-2.5 font-semibold text-white hover:bg-red-500"
+                            >
+                                Reject Invitation
+                            </button>
+                        </form>
+                    </div>
+                @else
+                    <h2 class="text-xl font-semibold text-white">
+                        Join Request
+                    </h2>
+
+                    <p class="mt-2 text-slate-400">
+                        Your request to join this team is pending.
+                    </p>
+
+                    <form
+                        method="POST"
+                        action="{{ route('team-membership-requests.cancel', $myPendingRequest) }}"
+                        class="mt-5"
+                    >
+                        @csrf
+                        @method('PATCH')
+
+                        <button
+                            type="submit"
+                            class="rounded-lg bg-slate-700 px-5 py-2.5 font-semibold text-white hover:bg-slate-600"
+                        >
+                            Cancel Join Request
+                        </button>
+                    </form>
+                @endif
+
+            @else
+                <h2 class="text-xl font-semibold text-white">
+                    Join Team
+                </h2>
+
+                <p class="mt-2 text-slate-400">
+                    Request membership in this team.
+                </p>
+
+                <form
+                    method="POST"
+                    action="{{ route('teams.join-requests.store', $team) }}"
+                    class="mt-5"
+                >
+                    @csrf
+
+                    <button
+                        type="submit"
+                        class="rounded-lg bg-cyan-600 px-5 py-2.5 font-semibold text-white hover:bg-cyan-500"
+                    >
+                        Request to Join
+                    </button>
+                </form>
+            @endif
+        </section>
     @endif
 
-
-    <br><br>
-
-
-    @if ($team->leader_id === auth()->id())
-        <a href="{{ route('teams.edit', $team) }}">
-            Edit Team
+    <div class="mt-8">
+        <a
+            href="{{ route('teams.create') }}"
+            class="inline-flex rounded-lg bg-slate-700 px-5 py-2.5 font-semibold text-white transition hover:bg-slate-600"
+        >
+            Create Another Team
         </a>
-    @endif
-
-
-    <br><br>
-
-
-    <a href="{{ route('teams.create') }}">
-        Create Another Team
-    </a>
-
-
-</body>
-</html>
+    </div>
+</div>
+@endsection

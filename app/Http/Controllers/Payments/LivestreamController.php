@@ -7,42 +7,42 @@ use App\Http\Requests\Payments\StoreLivestreamRequest;
 use App\Http\Requests\Payments\UpdateLivestreamRequest;
 use App\Models\Livestream;
 use App\Models\Tournament;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class LivestreamController extends Controller
 {
-
-    /**
-     * Display livestreams.
-     */
     public function index(Tournament $tournament): View
     {
+        $canManage = $this->canManage($tournament);
+
         $livestreams = $tournament
             ->livestreams()
-            ->where('is_active', true)
+            ->when(
+                ! $canManage,
+                fn ($query) =>
+                    $query->where(
+                        'is_active',
+                        true
+                    )
+            )
             ->latest()
             ->get();
-
 
         return view(
             'payments.livestreams.index',
             compact(
                 'tournament',
-                'livestreams'
+                'livestreams',
+                'canManage'
             )
         );
     }
 
-
-
-    /**
-     * Create livestream page.
-     */
     public function create(Tournament $tournament): View
     {
         $this->authorizeManage($tournament);
-
 
         return view(
             'payments.livestreams.create',
@@ -50,38 +50,21 @@ class LivestreamController extends Controller
         );
     }
 
-
-
-
-    /**
-     * Store livestream.
-     */
     public function store(
         StoreLivestreamRequest $request,
         Tournament $tournament
     ): RedirectResponse {
-
         $this->authorizeManage($tournament);
-
 
         $data = $request->validated();
 
-
         $tournament->livestreams()->create([
-
             'platform' => $data['platform'],
-
             'url' => $data['url'],
-
             'label' => $data['label'] ?? null,
-
             'is_active' => true,
-
             'added_by' => auth()->id(),
-
         ]);
-
-
 
         return redirect()
             ->route(
@@ -94,20 +77,15 @@ class LivestreamController extends Controller
             );
     }
 
-
-
-
-
-    /**
-     * Edit livestream.
-     */
     public function edit(
         Tournament $tournament,
         Livestream $livestream
     ): View {
-
         $this->authorizeManage($tournament);
-
+        $this->ensureBelongsToTournament(
+            $livestream,
+            $tournament
+        );
 
         return view(
             'payments.livestreams.edit',
@@ -118,27 +96,20 @@ class LivestreamController extends Controller
         );
     }
 
-
-
-
-
-    /**
-     * Update livestream.
-     */
     public function update(
         UpdateLivestreamRequest $request,
         Tournament $tournament,
         Livestream $livestream
     ): RedirectResponse {
-
-
         $this->authorizeManage($tournament);
-
+        $this->ensureBelongsToTournament(
+            $livestream,
+            $tournament
+        );
 
         $livestream->update(
             $request->validated()
         );
-
 
         return redirect()
             ->route(
@@ -151,24 +122,17 @@ class LivestreamController extends Controller
             );
     }
 
-
-
-
-
-    /**
-     * Delete livestream.
-     */
     public function destroy(
         Tournament $tournament,
         Livestream $livestream
     ): RedirectResponse {
-
-
         $this->authorizeManage($tournament);
-
+        $this->ensureBelongsToTournament(
+            $livestream,
+            $tournament
+        );
 
         $livestream->delete();
-
 
         return redirect()
             ->route(
@@ -181,30 +145,42 @@ class LivestreamController extends Controller
             );
     }
 
-
-
-
-
-    /**
-     * Organizer access check.
-     */
-    protected function authorizeManage(
+    private function canManage(
         Tournament $tournament
-    ): void {
+    ): bool {
+        $user = auth()->user();
 
-        if (! auth()->check()) {
-            abort(403);
+        if ($user === null) {
+            return false;
         }
 
-
-        if (
-            (int) auth()->id()
-            !==
-            (int) $tournament->organizer_id
-        ) {
-            abort(403);
+        if ($user->hasRole(User::ROLE_ADMIN)) {
+            return true;
         }
 
+        return (int) $user->id
+            ===
+            (int) $tournament->organizer_id;
     }
 
+    private function authorizeManage(
+        Tournament $tournament
+    ): void {
+        abort_unless(
+            $this->canManage($tournament),
+            403
+        );
+    }
+
+    private function ensureBelongsToTournament(
+        Livestream $livestream,
+        Tournament $tournament
+    ): void {
+        abort_unless(
+            (int) $livestream->tournament_id
+                ===
+            (int) $tournament->id,
+            404
+        );
+    }
 }

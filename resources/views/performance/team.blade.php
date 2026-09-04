@@ -1,120 +1,109 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $performance['team']->name }} - Performance History</title>
-</head>
+@section('title', $performance['team']->name . ' Performance | ArenaSync')
 
-<body>
-
-    <h1>{{ $performance['team']->name }} - Performance History</h1>
-
-    <p>
-        <a href="{{ route('teams.show', $performance['team']) }}">
-            Back to Team Profile
+@section('content')
+<div class="mx-auto max-w-6xl">
+    <div class="mb-6">
+        <a
+            href="{{ route('teams.show', $performance['team']) }}"
+            class="text-sm font-medium text-cyan-400 hover:text-cyan-300"
+        >
+            â† Back to Team Profile
         </a>
-    </p>
+    </div>
 
-    <hr>
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-cyan-400">
+            {{ $performance['team']->name }} Performance
+        </h1>
 
-    <h2>Performance Summary</h2>
+        <p class="mt-2 text-slate-400">
+            Verified match history and team performance summary.
+        </p>
+    </div>
 
-    <p>
-        <strong>Matches Played:</strong>
-        {{ $performance['summary']['matches_played'] }}
-    </p>
+    <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+        @foreach ([
+            ['Matches', $performance['summary']['matches_played']],
+            ['Wins', $performance['summary']['wins']],
+            ['Losses', $performance['summary']['losses']],
+            ['Draws', $performance['summary']['draws']],
+            ['Score For', $performance['summary']['score_for']],
+            ['Score Against', $performance['summary']['score_against']],
+            ['Win Rate', $performance['summary']['win_rate'] . '%'],
+        ] as [$label, $value])
+            <div class="rounded-xl border border-slate-800 bg-slate-900 p-4">
+                <p class="text-xs uppercase tracking-wide text-slate-500">
+                    {{ $label }}
+                </p>
 
-    <p>
-        <strong>Wins:</strong>
-        {{ $performance['summary']['wins'] }}
-    </p>
+                <p class="mt-2 text-2xl font-bold text-white">
+                    {{ $value }}
+                </p>
+            </div>
+        @endforeach
+    </section>
 
-    <p>
-        <strong>Losses:</strong>
-        {{ $performance['summary']['losses'] }}
-    </p>
+    <section class="mt-8 rounded-xl border border-slate-800 bg-slate-900 p-6">
+        <h2 class="text-2xl font-semibold text-white">
+            Verified Match History
+        </h2>
 
-    <p>
-        <strong>Draws:</strong>
-        {{ $performance['summary']['draws'] }}
-    </p>
+        @if (empty($performance['history']))
+            <div class="mt-5 rounded-lg bg-slate-950 p-6 text-center text-slate-400">
+                No verified match history is available for this team yet.
+            </div>
+        @else
+            <div class="mt-5 overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-800 text-sm">
+                    <thead>
+                        <tr class="text-left text-xs uppercase tracking-wide text-slate-500">
+                            <th class="px-3 py-3">Tournament</th>
+                            <th class="px-3 py-3">Round</th>
+                            <th class="px-3 py-3">Opponent</th>
+                            <th class="px-3 py-3">Score</th>
+                            <th class="px-3 py-3">Result</th>
+                            <th class="px-3 py-3">Date</th>
+                        </tr>
+                    </thead>
 
-    <p>
-        <strong>Score For:</strong>
-        {{ $performance['summary']['score_for'] }}
-    </p>
+                    <tbody class="divide-y divide-slate-800">
+                        @foreach ($performance['history'] as $match)
+                            <tr>
+                                <td class="px-3 py-4 font-medium text-white">
+                                    {{ $match['tournament'] }}
+                                </td>
 
-    <p>
-        <strong>Score Against:</strong>
-        {{ $performance['summary']['score_against'] }}
-    </p>
+                                <td class="px-3 py-4 text-slate-300">
+                                    {{ $match['round'] }}
+                                </td>
 
-    <p>
-        <strong>Win Rate:</strong>
-        {{ $performance['summary']['win_rate'] }}%
-    </p>
+                                <td class="px-3 py-4 text-slate-300">
+                                    {{ $match['opponent'] }}
+                                </td>
 
-    <hr>
+                                <td class="px-3 py-4 font-semibold text-slate-200">
+                                    {{ $match['team_score'] }} - {{ $match['opponent_score'] }}
+                                </td>
 
-    <h2>Verified Match History</h2>
+                                <td class="px-3 py-4">
+                                    <span class="rounded-full bg-slate-800 px-3 py-1 text-xs font-semibold text-cyan-300">
+                                        {{ $match['outcome'] }}
+                                    </span>
+                                </td>
 
-    @if (empty($performance['history']))
-
-        <p>No verified match history is available for this team yet.</p>
-
-    @else
-
-        <table border="1" cellpadding="8" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>Tournament</th>
-                    <th>Round</th>
-                    <th>Opponent</th>
-                    <th>Score</th>
-                    <th>Result</th>
-                    <th>Match Date</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @foreach ($performance['history'] as $match)
-                    <tr>
-                        <td>
-                            {{ $match['tournament'] }}
-                        </td>
-
-                        <td>
-                            {{ $match['round'] }}
-                        </td>
-
-                        <td>
-                            {{ $match['opponent'] }}
-                        </td>
-
-                        <td>
-                            {{ $match['team_score'] }}
-                            -
-                            {{ $match['opponent_score'] }}
-                        </td>
-
-                        <td>
-                            {{ $match['outcome'] }}
-                        </td>
-
-                        <td>
-                            {{ $match['scheduled_at']
-                                ? $match['scheduled_at']->format('d M Y, h:i A')
-                                : 'Not available' }}
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-
-    @endif
-
-</body>
-
-</html>
+                                <td class="px-3 py-4 text-slate-400">
+                                    {{ $match['scheduled_at']
+                                        ? $match['scheduled_at']->format('M d, Y h:i A')
+                                        : 'Not available' }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </section>
+</div>
+@endsection
