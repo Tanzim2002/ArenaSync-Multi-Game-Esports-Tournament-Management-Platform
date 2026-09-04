@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Payments;
 
+use App\Rules\ValidStreamUrl;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreLivestreamRequest extends FormRequest
 {
@@ -11,50 +13,31 @@ class StoreLivestreamRequest extends FormRequest
         return true;
     }
 
-
     public function rules(): array
     {
         return [
-
             'platform' => [
                 'required',
-                'in:youtube,twitch',
+                Rule::in([
+                    'youtube',
+                    'twitch',
+                    'facebook',
+                ]),
             ],
-
 
             'url' => [
                 'required',
                 'url',
-                function ($attribute, $value, $fail) {
-
-                    $platform = $this->input('platform');
-
-
-                    if (
-                        $platform === 'youtube'
-                        && !str_contains($value, 'youtube.com')
-                    ) {
-                        $fail('Invalid YouTube URL.');
-                    }
-
-
-                    if (
-                        $platform === 'twitch'
-                        && !str_contains($value, 'twitch.tv')
-                    ) {
-                        $fail('Invalid Twitch URL.');
-                    }
-
-                },
+                new ValidStreamUrl(
+                    $this->input('platform')
+                ),
             ],
-
 
             'label' => [
                 'nullable',
                 'string',
                 'max:255',
             ],
-
         ];
     }
 }

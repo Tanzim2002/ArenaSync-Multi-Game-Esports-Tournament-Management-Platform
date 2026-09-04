@@ -11,36 +11,72 @@ class Payment extends Model
     use HasFactory;
 
     public const STATUS_PENDING = 'PENDING';
+
     public const STATUS_VERIFIED = 'VERIFIED';
+
     public const STATUS_REJECTED = 'REJECTED';
 
     protected $fillable = [
         'registration_id',
         'amount',
+        'method',
+        'reference',
         'status',
-        'transaction_id',
-        'verified_at',
-        'verified_by',
+        'submitted_at',
+        'reviewed_by',
+        'reviewed_at',
     ];
 
-    protected function casts(): array
+    public static function statuses(): array
     {
         return [
-            'amount' => 'decimal:2',
-            'verified_at' => 'datetime',
+            self::STATUS_PENDING,
+            self::STATUS_VERIFIED,
+            self::STATUS_REJECTED,
         ];
     }
 
     public function registration(): BelongsTo
     {
-        return $this->belongsTo(Registration::class);
+        return $this->belongsTo(
+            Registration::class
+        );
     }
 
-    public function verifier(): BelongsTo
+    public function reviewer(): BelongsTo
     {
         return $this->belongsTo(
             User::class,
-            'verified_by'
+            'reviewed_by'
         );
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status
+            === self::STATUS_PENDING;
+    }
+
+    public function isVerified(): bool
+    {
+        return $this->status
+            === self::STATUS_VERIFIED;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status
+            === self::STATUS_REJECTED;
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'decimal:2',
+
+            'submitted_at' => 'datetime',
+
+            'reviewed_at' => 'datetime',
+        ];
     }
 }

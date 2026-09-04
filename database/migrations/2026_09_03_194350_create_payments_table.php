@@ -8,37 +8,39 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $table) {
-
+        Schema::create('payments', function (Blueprint $table): void {
             $table->id();
 
             $table->foreignId('registration_id')
+                ->unique()
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->decimal('amount', 10, 2);
+            $table->decimal('amount', 12, 2);
 
-            $table->enum('status', [
-                'PENDING',
-                'VERIFIED',
-                'REJECTED',
-            ])->default('PENDING');
+            $table->string('method', 100);
 
-            $table->string('transaction_id')
-                ->nullable();
+            $table->string('reference', 150)
+                ->unique();
 
-            $table->timestamp('verified_at')
-                ->nullable();
+            $table->string('status', 20)
+                ->default('PENDING')
+                ->index();
 
-            $table->foreignId('verified_by')
+            $table->timestamp('submitted_at')
+                ->useCurrent();
+
+            $table->foreignId('reviewed_by')
                 ->nullable()
                 ->constrained('users')
                 ->nullOnDelete();
 
+            $table->timestamp('reviewed_at')
+                ->nullable();
+
             $table->timestamps();
         });
     }
-
 
     public function down(): void
     {

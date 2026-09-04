@@ -2,22 +2,20 @@
 
 namespace App\Http\Requests\Payments;
 
+use App\Rules\ValidStreamUrl;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class UpdateLivestreamRequest extends FormRequest
 {
-
     public function authorize(): bool
     {
         return true;
     }
 
-
     public function rules(): array
     {
         return [
-
             'platform' => [
                 'required',
                 Rule::in([
@@ -27,12 +25,13 @@ class UpdateLivestreamRequest extends FormRequest
                 ]),
             ],
 
-
             'url' => [
                 'required',
                 'url',
+                new ValidStreamUrl(
+                    $this->input('platform')
+                ),
             ],
-
 
             'label' => [
                 'nullable',
@@ -40,13 +39,10 @@ class UpdateLivestreamRequest extends FormRequest
                 'max:255',
             ],
 
-
             'is_active' => [
-                'sometimes',
+                'required',
                 'boolean',
             ],
-
         ];
     }
-
 }

@@ -21,24 +21,38 @@ class Team extends Model
 
     public function leader(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'leader_id');
+        return $this->belongsTo(
+            User::class,
+            'leader_id'
+        );
+    }
+
+    public function preferredGame(): BelongsTo
+    {
+        return $this->belongsTo(
+            Game::class,
+            'preferred_game_id'
+        );
     }
 
     public function teamMembers(): HasMany
     {
-        return $this->hasMany(TeamMember::class);
+        return $this->hasMany(
+            TeamMember::class
+        );
     }
 
     public function membershipRequests(): HasMany
     {
-        return $this->hasMany(TeamMembershipRequest::class);
+        return $this->hasMany(
+            TeamMembershipRequest::class
+        );
     }
 
-    /**
-     * Tournament registrations submitted by this team.
-     */
     public function registrations(): HasMany
     {
-        return $this->hasMany(Registration::class);
+        return $this->hasMany(
+            Registration::class
+        );
     }
 }
